@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="480" viewBox="0 0 320 480" role="img" aria-label="牛奶海倒影">
+
+  <defs>
+    <linearGradient id="sky-ph_0003" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6fb3c9"/>
+      <stop offset="55%" stop-color="#cfe9ec"/>
+      <stop offset="100%" stop-color="#1f4f6d"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0003" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#cfe9ec" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#2e6f95" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0003" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="320" height="480" fill="url(#sky-ph_0003)"/><circle cx="96" cy="124.8" r="19.2" fill="#cfe9ec" opacity="0.7"/><polygon points="0,124.8 89.6,19.2 166.4,134.4 236.8,48 320,144 320,240 0,240" fill="#2e6f95" opacity="0.45"/><polygon points="0,163.2 89.6,57.6 166.4,172.8 236.8,86.4 320,182.4 320,240 0,240" fill="#1f4f6d" opacity="0.6"/><polygon points="0,201.6 89.6,96 166.4,211.2 236.8,124.8 320,220.8 320,240 0,240" fill="#2e6f95" opacity="0.75"/><rect x="0" y="240" width="320" height="240" fill="#2e6f95" opacity="0.9"/><rect x="34.78" y="240" width="174.98" height="3.84" fill="#cfe9ec" opacity="0.18"/><rect x="32.94" y="257.14" width="258.7" height="3.84" fill="#cfe9ec" opacity="0.12"/><rect x="0.94" y="274.29" width="271.85" height="3.84" fill="#cfe9ec" opacity="0.13"/><rect x="48.01" y="291.43" width="199.35" height="3.84" fill="#cfe9ec" opacity="0.27"/><rect x="34.64" y="308.57" width="180.54" height="3.84" fill="#cfe9ec" opacity="0.29"/><rect x="40.53" y="325.71" width="243.5" height="3.84" fill="#cfe9ec" opacity="0.18"/><rect x="30.39" y="342.86" width="265.47" height="3.84" fill="#cfe9ec" opacity="0.25"/><rect x="16.78" y="360" width="284.7" height="3.84" fill="#cfe9ec" opacity="0.24"/><rect x="6.75" y="377.14" width="116.7" height="3.84" fill="#cfe9ec" opacity="0.13"/><rect x="2.82" y="394.29" width="165.35" height="3.84" fill="#cfe9ec" opacity="0.23"/><rect x="3.23" y="411.43" width="281.85" height="3.84" fill="#cfe9ec" opacity="0.15"/><rect x="52.53" y="428.57" width="178.53" height="3.84" fill="#cfe9ec" opacity="0.26"/><rect x="52.99" y="445.71" width="125.68" height="3.84" fill="#cfe9ec" opacity="0.3"/><rect x="24.8" y="462.86" width="224.26" height="3.84" fill="#cfe9ec" opacity="0.24"/></g>
+  <rect width="320" height="480" fill="url(#vig-ph_0003)"/>
+</svg>

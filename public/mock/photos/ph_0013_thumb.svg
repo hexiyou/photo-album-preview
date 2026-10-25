@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="384" height="480" viewBox="0 0 384 480" role="img" aria-label="灯塔与夜空">
+
+  <defs>
+    <linearGradient id="sky-ph_0013" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a9bb5"/>
+      <stop offset="55%" stop-color="#a8dbe3"/>
+      <stop offset="100%" stop-color="#123c52"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0013" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a8dbe3" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#1d5c7a" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0013" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="384" height="480" fill="url(#sky-ph_0013)"/><circle cx="84.48" cy="134.4" r="21.12" fill="#a8dbe3" opacity="0.75"/><rect x="0" y="264" width="384" height="216" fill="#1d5c7a" opacity="0.92"/><path d="M0 264 Q 96 256.8 192 264 T 384 264" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.17"/><path d="M0 276 Q 96 268.8 192 276 T 384 276" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.29"/><path d="M0 288 Q 96 280.8 192 288 T 384 288" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.24"/><path d="M0 300 Q 96 292.8 192 300 T 384 300" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.31"/><path d="M0 312 Q 96 304.8 192 312 T 384 312" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.26"/><path d="M0 324 Q 96 316.8 192 324 T 384 324" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.22"/><path d="M0 336 Q 96 328.8 192 336 T 384 336" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.22"/><path d="M0 348 Q 96 340.8 192 348 T 384 348" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.25"/><path d="M0 360 Q 96 352.8 192 360 T 384 360" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.22"/><path d="M0 372 Q 96 364.8 192 372 T 384 372" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.17"/><path d="M0 384 Q 96 376.8 192 384 T 384 384" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.21"/><path d="M0 396 Q 96 388.8 192 396 T 384 396" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.23"/><path d="M0 408 Q 96 400.8 192 408 T 384 408" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.14"/><path d="M0 420 Q 96 412.8 192 420 T 384 420" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.3"/><path d="M0 432 Q 96 424.8 192 432 T 384 432" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.24"/><path d="M0 444 Q 96 436.8 192 444 T 384 444" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.23"/><path d="M0 456 Q 96 448.8 192 456 T 384 456" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.28"/><path d="M0 468 Q 96 460.8 192 468 T 384 468" stroke="#a8dbe3" stroke-width="1.92" fill="none" opacity="0.22"/><polygon points="238.08,273.6 276.48,206.4 322.56,283.2" fill="#123c52" opacity="0.9"/></g>
+  <rect width="384" height="480" fill="url(#vig-ph_0013)"/>
+</svg>

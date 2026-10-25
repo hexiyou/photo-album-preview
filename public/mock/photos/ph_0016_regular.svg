@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" role="img" aria-label="玉兰初绽">
+
+  <defs>
+    <linearGradient id="sky-ph_0016" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e58ea4"/>
+      <stop offset="55%" stop-color="#f7d6de"/>
+      <stop offset="100%" stop-color="#8c3a58"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0016" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7d6de" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#c05a7a" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0016" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="1200" height="1200" fill="url(#glow-ph_0016)"/><circle cx="705.34" cy="622.85" r="81.05" fill="#c05a7a" opacity="0.84"/><circle cx="604.99" cy="724.41" r="81.05" fill="#e58ea4" opacity="0.89"/><circle cx="512.41" cy="679.31" r="81.05" fill="#c05a7a" opacity="0.85"/><circle cx="518.93" cy="549.21" r="81.05" fill="#e58ea4" opacity="0.8"/><circle cx="654.83" cy="528.02" r="81.05" fill="#c05a7a" opacity="0.78"/><circle cx="599.33" cy="618.45" r="44.21" fill="#8c3a58" opacity="0.75"/><circle cx="352.11" cy="523.68" r="80.38" fill="#c05a7a" opacity="0.77"/><circle cx="274.65" cy="610.61" r="80.38" fill="#e58ea4" opacity="0.72"/><circle cx="149.69" cy="546.48" r="80.38" fill="#c05a7a" opacity="0.58"/><circle cx="167.71" cy="440.76" r="80.38" fill="#e58ea4" opacity="0.61"/><circle cx="299.72" cy="417.23" r="80.38" fill="#c05a7a" opacity="0.63"/><circle cx="247.94" cy="508.83" r="43.84" fill="#8c3a58" opacity="0.75"/><circle cx="538.16" cy="288.54" r="89.71" fill="#c05a7a" opacity="0.76"/><circle cx="445.68" cy="376.66" r="89.71" fill="#e58ea4" opacity="0.61"/><circle cx="314.22" cy="303.17" r="89.71" fill="#c05a7a" opacity="0.75"/><circle cx="334.98" cy="184.55" r="89.71" fill="#e58ea4" opacity="0.58"/><circle cx="488.73" cy="163.3" r="89.71" fill="#c05a7a" opacity="0.61"/><circle cx="423.93" cy="261.25" r="48.94" fill="#8c3a58" opacity="0.75"/><circle cx="354.06" cy="738.41" r="94.07" fill="#c05a7a" opacity="0.75"/><circle cx="261.41" cy="855.36" r="94.07" fill="#e58ea4" opacity="0.85"/><circle cx="117.06" cy="782.93" r="94.07" fill="#c05a7a" opacity="0.61"/><circle cx="152.58" cy="641.03" r="94.07" fill="#e58ea4" opacity="0.83"/><circle cx="274.11" cy="620.71" r="94.07" fill="#c05a7a" opacity="0.86"/><circle cx="230.93" cy="736.04" r="51.31" fill="#8c3a58" opacity="0.75"/><circle cx="520.76" cy="335.2" r="74.57" fill="#c05a7a" opacity="0.6"/><circle cx="429.82" cy="425.84" r="74.57" fill="#e58ea4" opacity="0.88"/><circle cx="331.52" cy="361.5" r="74.57" fill="#c05a7a" opacity="0.58"/><circle cx="347.51" cy="267" r="74.57" fill="#e58ea4" opacity="0.72"/><circle cx="478.27" cy="247.71" r="74.57" fill="#c05a7a" opacity="0.65"/><circle cx="423.37" cy="328.43" r="40.68" fill="#8c3a58" opacity="0.75"/><circle cx="632.76" cy="576.49" r="57.05" fill="#c05a7a" opacity="0.86"/><circle cx="567.49" cy="636.43" r="57.05" fill="#e58ea4" opacity="0.84"/><circle cx="491.72" cy="593.61" r="57.05" fill="#c05a7a" opacity="0.77"/><circle cx="513.68" cy="503.18" r="57.05" fill="#e58ea4" opacity="0.59"/><circle cx="583.66" cy="491.53" r="57.05" fill="#c05a7a" opacity="0.8"/><circle cx="559.46" cy="562.18" r="31.12" fill="#8c3a58" opacity="0.75"/><circle cx="489.1" cy="669.12" r="84.84" fill="#c05a7a" opacity="0.66"/><circle cx="385.59" cy="752.83" r="84.84" fill="#e58ea4" opacity="0.64"/><circle cx="277.41" cy="680.75" r="84.84" fill="#c05a7a" opacity="0.7"/><circle cx="292.6" cy="575.2" r="84.84" fill="#e58ea4" opacity="0.58"/><circle cx="432" cy="542.97" r="84.84" fill="#c05a7a" opacity="0.89"/><circle cx="381.44" cy="641.85" r="46.27" fill="#8c3a58" opacity="0.75"/></g>
+  <rect width="1200" height="1200" fill="url(#vig-ph_0016)"/>
+</svg>

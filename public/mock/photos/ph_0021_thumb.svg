@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="480" viewBox="0 0 320 480" role="img" aria-label="妹妹的毕业礼">
+
+  <defs>
+    <linearGradient id="sky-ph_0021" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a98d76"/>
+      <stop offset="55%" stop-color="#e6d7c8"/>
+      <stop offset="100%" stop-color="#43372f"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0021" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e6d7c8" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#6b5a4e" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0021" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="320" height="480" fill="url(#glow-ph_0021)"/><ellipse cx="160" cy="201.6" rx="44.03" ry="51.2" fill="#6b5a4e" opacity="0.92"/><path d="M 52.48 480 Q 160 288 267.52 480 Z" fill="#6b5a4e" opacity="0.92"/><ellipse cx="136.96" cy="201.6" rx="33.79" ry="40.96" fill="#e6d7c8" opacity="0.28"/></g>
+  <rect width="320" height="480" fill="url(#vig-ph_0021)"/>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480" role="img" aria-label="雨后苔藓">
+
+  <defs>
+    <linearGradient id="sky-ph_0019" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5c8f52"/>
+      <stop offset="55%" stop-color="#a8c98a"/>
+      <stop offset="100%" stop-color="#1e3f28"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0019" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a8c98a" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#2f5d3a" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0019" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="480" height="480" fill="url(#glow-ph_0019)"/><rect x="10.37" y="-24" width="13.67" height="528" fill="#1e3f28" opacity="0.51"/><rect x="62.83" y="-24" width="15.05" height="528" fill="#1e3f28" opacity="0.47"/><rect x="118.77" y="-24" width="12.9" height="528" fill="#1e3f28" opacity="0.52"/><rect x="168.43" y="-24" width="8.22" height="528" fill="#1e3f28" opacity="0.6"/><rect x="218.8" y="-24" width="11.44" height="528" fill="#1e3f28" opacity="0.39"/><rect x="271" y="-24" width="10.37" height="528" fill="#1e3f28" opacity="0.55"/><rect x="335.85" y="-24" width="7.23" height="528" fill="#1e3f28" opacity="0.6"/><rect x="390.62" y="-24" width="12.88" height="528" fill="#1e3f28" opacity="0.47"/><rect x="435.12" y="-24" width="12.52" height="528" fill="#1e3f28" opacity="0.62"/><polygon points="48,86.4 105.6,144 67.2,163.2" fill="#a8c98a" opacity="0.22"/><polygon points="134.4,86.4 192,144 153.6,163.2" fill="#a8c98a" opacity="0.22"/><polygon points="220.8,86.4 278.4,144 240,163.2" fill="#a8c98a" opacity="0.22"/><polygon points="307.2,86.4 364.8,144 326.4,163.2" fill="#a8c98a" opacity="0.22"/><polygon points="393.6,86.4 451.2,144 412.8,163.2" fill="#a8c98a" opacity="0.22"/><circle cx="326.4" cy="76.8" r="48" fill="#a8c98a" opacity="0.4"/></g>
+  <rect width="480" height="480" fill="url(#vig-ph_0019)"/>
+</svg>

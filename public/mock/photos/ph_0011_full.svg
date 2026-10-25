@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1600" viewBox="0 0 2400 1600" role="img" aria-label="礁石边的浪">
+
+  <defs>
+    <linearGradient id="sky-ph_0011" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a9bb5"/>
+      <stop offset="55%" stop-color="#a8dbe3"/>
+      <stop offset="100%" stop-color="#123c52"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0011" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a8dbe3" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#1d5c7a" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0011" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="2400" height="1600" fill="url(#sky-ph_0011)"/><circle cx="528" cy="448" r="88" fill="#a8dbe3" opacity="0.75"/><rect x="0" y="880" width="2400" height="720" fill="#1d5c7a" opacity="0.92"/><path d="M0 880 Q 600 856 1200 880 T 2400 880" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.22"/><path d="M0 920 Q 600 896 1200 920 T 2400 920" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.22"/><path d="M0 960 Q 600 936 1200 960 T 2400 960" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.2"/><path d="M0 1000 Q 600 976 1200 1000 T 2400 1000" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.29"/><path d="M0 1040 Q 600 1016 1200 1040 T 2400 1040" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.28"/><path d="M0 1080 Q 600 1056 1200 1080 T 2400 1080" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.15"/><path d="M0 1120 Q 600 1096 1200 1120 T 2400 1120" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.26"/><path d="M0 1160 Q 600 1136 1200 1160 T 2400 1160" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.14"/><path d="M0 1200 Q 600 1176 1200 1200 T 2400 1200" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.27"/><path d="M0 1240 Q 600 1216 1200 1240 T 2400 1240" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.28"/><path d="M0 1280 Q 600 1256 1200 1280 T 2400 1280" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.25"/><path d="M0 1320 Q 600 1296 1200 1320 T 2400 1320" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.3"/><path d="M0 1360 Q 600 1336 1200 1360 T 2400 1360" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.2"/><path d="M0 1400 Q 600 1376 1200 1400 T 2400 1400" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.15"/><path d="M0 1440 Q 600 1416 1200 1440 T 2400 1440" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.18"/><path d="M0 1480 Q 600 1456 1200 1480 T 2400 1480" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.32"/><path d="M0 1520 Q 600 1496 1200 1520 T 2400 1520" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.32"/><path d="M0 1560 Q 600 1536 1200 1560 T 2400 1560" stroke="#a8dbe3" stroke-width="6.4" fill="none" opacity="0.3"/><polygon points="1488,912 1728,688 2016,944" fill="#123c52" opacity="0.9"/></g>
+  <rect width="2400" height="1600" fill="url(#vig-ph_0011)"/>
+</svg>

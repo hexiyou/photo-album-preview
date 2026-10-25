@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" role="img" aria-label="无人区公路">
+
+  <defs>
+    <linearGradient id="sky-ph_0015" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c98f52"/>
+      <stop offset="55%" stop-color="#efd2a8"/>
+      <stop offset="100%" stop-color="#5d3a20"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0015" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#efd2a8" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#8a5a34" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0015" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="480" height="320" fill="url(#sky-ph_0015)"/><circle cx="115.2" cy="96" r="22.4" fill="#efd2a8" opacity="0.7"/><path d="M0 160 Q 144 129.97 297.6 172.01 T 480 150.99 L 480 320 L 0 320 Z" fill="#c98f52" opacity="0.5"/><path d="M0 195.2 Q 144 167.34 297.6 206.35 T 480 186.84 L 480 320 L 0 320 Z" fill="#efd2a8" opacity="0.58"/><path d="M0 230.4 Q 144 199.48 297.6 242.77 T 480 221.12 L 480 320 L 0 320 Z" fill="#c98f52" opacity="0.66"/><path d="M0 265.6 Q 144 248.05 297.6 272.62 T 480 260.33 L 480 320 L 0 320 Z" fill="#efd2a8" opacity="0.74"/><path d="M0 300.8 Q 144 279.26 297.6 309.42 T 480 294.34 L 480 320 L 0 320 Z" fill="#c98f52" opacity="0.82"/></g>
+  <rect width="480" height="320" fill="url(#vig-ph_0015)"/>
+</svg>

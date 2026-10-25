@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" role="img" aria-label="年夜饭前的厨房">
+
+  <defs>
+    <linearGradient id="sky-ph_0023" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a98d76"/>
+      <stop offset="55%" stop-color="#e6d7c8"/>
+      <stop offset="100%" stop-color="#43372f"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0023" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e6d7c8" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#6b5a4e" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0023" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="480" height="320" fill="url(#glow-ph_0023)"/><ellipse cx="240" cy="134.4" rx="44.03" ry="51.2" fill="#6b5a4e" opacity="0.92"/><path d="M 132.48 320 Q 240 192 347.52 320 Z" fill="#6b5a4e" opacity="0.92"/><ellipse cx="216.96" cy="134.4" rx="33.79" ry="40.96" fill="#e6d7c8" opacity="0.28"/></g>
+  <rect width="480" height="320" fill="url(#vig-ph_0023)"/>
+</svg>

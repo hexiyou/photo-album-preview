@@ -1,0 +1,24 @@
+{
+  "name": "photo-album-preview",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "基于 Vue 3 的在线相册预览程序：缩略图网格 / 详细记录两种浏览模式，支持大图查看、下载、旋转翻转",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "mock:api": "node mock/server.mjs",
+    "gen:mock": "node scripts/gen-mock-images.mjs"
+  },
+  "dependencies": {
+    "vue": "^3.5.44"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.10",
+    "vite": "^8.3.5"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

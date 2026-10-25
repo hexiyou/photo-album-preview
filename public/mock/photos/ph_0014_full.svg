@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1600" viewBox="0 0 2400 1600" role="img" aria-label="沙丘的脊线">
+
+  <defs>
+    <linearGradient id="sky-ph_0014" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c98f52"/>
+      <stop offset="55%" stop-color="#efd2a8"/>
+      <stop offset="100%" stop-color="#5d3a20"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0014" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#efd2a8" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#8a5a34" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0014" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="2400" height="1600" fill="url(#sky-ph_0014)"/><circle cx="576" cy="480" r="112" fill="#efd2a8" opacity="0.7"/><path d="M0 800 Q 720 668.26 1488 852.7 T 2400 760.48 L 2400 1600 L 0 1600 Z" fill="#c98f52" opacity="0.5"/><path d="M0 976 Q 720 888.39 1488 1011.05 T 2400 949.72 L 2400 1600 L 0 1600 Z" fill="#efd2a8" opacity="0.58"/><path d="M0 1152 Q 720 1021.18 1488 1204.33 T 2400 1112.75 L 2400 1600 L 0 1600 Z" fill="#c98f52" opacity="0.66"/><path d="M0 1328 Q 720 1216.77 1488 1372.49 T 2400 1294.63 L 2400 1600 L 0 1600 Z" fill="#efd2a8" opacity="0.74"/><path d="M0 1504 Q 720 1356.07 1488 1563.17 T 2400 1459.62 L 2400 1600 L 0 1600 Z" fill="#c98f52" opacity="0.82"/></g>
+  <rect width="2400" height="1600" fill="url(#vig-ph_0014)"/>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1600" viewBox="0 0 2400 1600" role="img" aria-label="折多山垭口">
+
+  <defs>
+    <linearGradient id="sky-ph_0002" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fb0cc"/>
+      <stop offset="55%" stop-color="#dfe9f0"/>
+      <stop offset="100%" stop-color="#3f5d7d"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0002" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#dfe9f0" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#5b7fa6" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0002" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="2400" height="1600" fill="url(#sky-ph_0002)"/><circle cx="1728" cy="384" r="112" fill="#dfe9f0" opacity="0.85"/><polygon points="0,1600 0,992 800,706.4 1600,918.4 2400,725.37 2400,1600" fill="#5b7fa6" opacity="0.55"/><polygon points="0,1600 0,841.41 600,1015.25 1200,856.96 1800,958.91 2400,887.03 2400,1600" fill="#3f5d7d" opacity="0.67"/><polygon points="0,1600 0,1112.1 480,988.55 960,1068.13 1440,1012.02 1920,1030.2 2400,1045.26 2400,1600" fill="#5b7fa6" opacity="0.79"/><polygon points="0,1600 0,1120.15 400,1177.34 800,1137.02 1200,1150.08 1600,1160.91 2000,1128.98 2400,1190.24 2400,1600" fill="#3f5d7d" opacity="0.91"/><rect x="0" y="896" width="2400" height="160" fill="#dfe9f0" opacity="0.35"/></g>
+  <rect width="2400" height="1600" fill="url(#vig-ph_0002)"/>
+</svg>

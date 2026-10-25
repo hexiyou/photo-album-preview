@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" role="img" aria-label="渔船归港">
+
+  <defs>
+    <linearGradient id="sky-ph_0012" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a9bb5"/>
+      <stop offset="55%" stop-color="#a8dbe3"/>
+      <stop offset="100%" stop-color="#123c52"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0012" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a8dbe3" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#1d5c7a" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0012" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="480" height="320" fill="url(#sky-ph_0012)"/><circle cx="105.6" cy="89.6" r="17.6" fill="#a8dbe3" opacity="0.75"/><rect x="0" y="176" width="480" height="144" fill="#1d5c7a" opacity="0.92"/><path d="M0 176 Q 120 171.2 240 176 T 480 176" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.33"/><path d="M0 184 Q 120 179.2 240 184 T 480 184" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.22"/><path d="M0 192 Q 120 187.2 240 192 T 480 192" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.14"/><path d="M0 200 Q 120 195.2 240 200 T 480 200" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.2"/><path d="M0 208 Q 120 203.2 240 208 T 480 208" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.21"/><path d="M0 216 Q 120 211.2 240 216 T 480 216" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.19"/><path d="M0 224 Q 120 219.2 240 224 T 480 224" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.3"/><path d="M0 232 Q 120 227.2 240 232 T 480 232" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.27"/><path d="M0 240 Q 120 235.2 240 240 T 480 240" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.2"/><path d="M0 248 Q 120 243.2 240 248 T 480 248" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.25"/><path d="M0 256 Q 120 251.2 240 256 T 480 256" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.24"/><path d="M0 264 Q 120 259.2 240 264 T 480 264" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.16"/><path d="M0 272 Q 120 267.2 240 272 T 480 272" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.25"/><path d="M0 280 Q 120 275.2 240 280 T 480 280" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.18"/><path d="M0 288 Q 120 283.2 240 288 T 480 288" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.17"/><path d="M0 296 Q 120 291.2 240 296 T 480 296" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.31"/><path d="M0 304 Q 120 299.2 240 304 T 480 304" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.32"/><path d="M0 312 Q 120 307.2 240 312 T 480 312" stroke="#a8dbe3" stroke-width="1.28" fill="none" opacity="0.23"/><polygon points="297.6,182.4 345.6,137.6 403.2,188.8" fill="#123c52" opacity="0.9"/></g>
+  <rect width="480" height="320" fill="url(#vig-ph_0012)"/>
+</svg>

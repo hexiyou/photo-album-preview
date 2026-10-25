@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="2400" viewBox="0 0 2400 2400" role="img" aria-label="雨后苔藓">
+
+  <defs>
+    <linearGradient id="sky-ph_0019" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5c8f52"/>
+      <stop offset="55%" stop-color="#a8c98a"/>
+      <stop offset="100%" stop-color="#1e3f28"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0019" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a8c98a" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#2f5d3a" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0019" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="2400" height="2400" fill="url(#glow-ph_0019)"/><rect x="51.85" y="-120" width="68.33" height="2640" fill="#1e3f28" opacity="0.51"/><rect x="314.16" y="-120" width="75.24" height="2640" fill="#1e3f28" opacity="0.47"/><rect x="593.83" y="-120" width="64.52" height="2640" fill="#1e3f28" opacity="0.52"/><rect x="842.13" y="-120" width="41.12" height="2640" fill="#1e3f28" opacity="0.6"/><rect x="1094.02" y="-120" width="57.2" height="2640" fill="#1e3f28" opacity="0.39"/><rect x="1354.98" y="-120" width="51.84" height="2640" fill="#1e3f28" opacity="0.55"/><rect x="1679.26" y="-120" width="36.13" height="2640" fill="#1e3f28" opacity="0.6"/><rect x="1953.12" y="-120" width="64.4" height="2640" fill="#1e3f28" opacity="0.47"/><rect x="2175.59" y="-120" width="62.61" height="2640" fill="#1e3f28" opacity="0.62"/><polygon points="240,432 528,720 336,816" fill="#a8c98a" opacity="0.22"/><polygon points="672,432 960,720 768,816" fill="#a8c98a" opacity="0.22"/><polygon points="1104,432 1392,720 1200,816" fill="#a8c98a" opacity="0.22"/><polygon points="1536,432 1824,720 1632,816" fill="#a8c98a" opacity="0.22"/><polygon points="1968,432 2256,720 2064,816" fill="#a8c98a" opacity="0.22"/><circle cx="1632" cy="384" r="240" fill="#a8c98a" opacity="0.4"/></g>
+  <rect width="2400" height="2400" fill="url(#vig-ph_0019)"/>
+</svg>

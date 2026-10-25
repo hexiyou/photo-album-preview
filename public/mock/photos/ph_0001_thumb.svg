@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" role="img" aria-label="晨雾中的山谷">
+
+  <defs>
+    <linearGradient id="sky-ph_0001" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fb0cc"/>
+      <stop offset="55%" stop-color="#dfe9f0"/>
+      <stop offset="100%" stop-color="#3f5d7d"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0001" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#dfe9f0" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#5b7fa6" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0001" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="480" height="320" fill="url(#sky-ph_0001)"/><circle cx="345.6" cy="76.8" r="22.4" fill="#dfe9f0" opacity="0.85"/><polygon points="0,320 0,198.4 160,141.28 320,183.68 480,145.07 480,320" fill="#5b7fa6" opacity="0.55"/><polygon points="0,320 0,168.28 120,203.05 240,171.39 360,191.78 480,177.41 480,320" fill="#3f5d7d" opacity="0.67"/><polygon points="0,320 0,222.42 96,197.71 192,213.63 288,202.4 384,206.04 480,209.05 480,320" fill="#5b7fa6" opacity="0.79"/><polygon points="0,320 0,224.03 80,235.47 160,227.4 240,230.02 320,232.18 400,225.8 480,238.05 480,320" fill="#3f5d7d" opacity="0.91"/><rect x="0" y="179.2" width="480" height="32" fill="#dfe9f0" opacity="0.35"/></g>
+  <rect width="480" height="320" fill="url(#vig-ph_0001)"/>
+</svg>

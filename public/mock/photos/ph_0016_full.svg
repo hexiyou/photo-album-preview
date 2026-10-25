@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="2400" viewBox="0 0 2400 2400" role="img" aria-label="玉兰初绽">
+
+  <defs>
+    <linearGradient id="sky-ph_0016" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e58ea4"/>
+      <stop offset="55%" stop-color="#f7d6de"/>
+      <stop offset="100%" stop-color="#8c3a58"/>
+    </linearGradient>
+    <linearGradient id="glow-ph_0016" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7d6de" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#c05a7a" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="vig-ph_0016" cx="50%" cy="50%" r="72%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.32"/>
+    </radialGradient>
+  </defs>
+  <g><rect width="2400" height="2400" fill="url(#glow-ph_0016)"/><circle cx="1410.68" cy="1245.71" r="162.1" fill="#c05a7a" opacity="0.84"/><circle cx="1209.98" cy="1448.81" r="162.1" fill="#e58ea4" opacity="0.89"/><circle cx="1024.82" cy="1358.62" r="162.1" fill="#c05a7a" opacity="0.85"/><circle cx="1037.86" cy="1098.43" r="162.1" fill="#e58ea4" opacity="0.8"/><circle cx="1309.66" cy="1056.05" r="162.1" fill="#c05a7a" opacity="0.78"/><circle cx="1198.66" cy="1236.91" r="88.42" fill="#8c3a58" opacity="0.75"/><circle cx="704.22" cy="1047.36" r="160.76" fill="#c05a7a" opacity="0.77"/><circle cx="549.29" cy="1221.22" r="160.76" fill="#e58ea4" opacity="0.72"/><circle cx="299.38" cy="1092.96" r="160.76" fill="#c05a7a" opacity="0.58"/><circle cx="335.41" cy="881.52" r="160.76" fill="#e58ea4" opacity="0.61"/><circle cx="599.43" cy="834.45" r="160.76" fill="#c05a7a" opacity="0.63"/><circle cx="495.89" cy="1017.66" r="87.68" fill="#8c3a58" opacity="0.75"/><circle cx="1076.32" cy="577.08" r="179.43" fill="#c05a7a" opacity="0.76"/><circle cx="891.36" cy="753.32" r="179.43" fill="#e58ea4" opacity="0.61"/><circle cx="628.44" cy="606.34" r="179.43" fill="#c05a7a" opacity="0.75"/><circle cx="669.97" cy="369.1" r="179.43" fill="#e58ea4" opacity="0.58"/><circle cx="977.46" cy="326.6" r="179.43" fill="#c05a7a" opacity="0.61"/><circle cx="847.86" cy="522.5" r="97.87" fill="#8c3a58" opacity="0.75"/><circle cx="708.11" cy="1476.83" r="188.14" fill="#c05a7a" opacity="0.75"/><circle cx="522.82" cy="1710.72" r="188.14" fill="#e58ea4" opacity="0.85"/><circle cx="234.12" cy="1565.86" r="188.14" fill="#c05a7a" opacity="0.61"/><circle cx="305.17" cy="1282.06" r="188.14" fill="#e58ea4" opacity="0.83"/><circle cx="548.21" cy="1241.42" r="188.14" fill="#c05a7a" opacity="0.86"/><circle cx="461.86" cy="1472.09" r="102.62" fill="#8c3a58" opacity="0.75"/><circle cx="1041.52" cy="670.4" r="149.14" fill="#c05a7a" opacity="0.6"/><circle cx="859.63" cy="851.68" r="149.14" fill="#e58ea4" opacity="0.88"/><circle cx="663.05" cy="722.99" r="149.14" fill="#c05a7a" opacity="0.58"/><circle cx="695.02" cy="534" r="149.14" fill="#e58ea4" opacity="0.72"/><circle cx="956.54" cy="495.43" r="149.14" fill="#c05a7a" opacity="0.65"/><circle cx="846.75" cy="656.87" r="81.35" fill="#8c3a58" opacity="0.75"/><circle cx="1265.51" cy="1152.99" r="114.09" fill="#c05a7a" opacity="0.86"/><circle cx="1134.98" cy="1272.85" r="114.09" fill="#e58ea4" opacity="0.84"/><circle cx="983.44" cy="1187.23" r="114.09" fill="#c05a7a" opacity="0.77"/><circle cx="1027.36" cy="1006.35" r="114.09" fill="#e58ea4" opacity="0.59"/><circle cx="1167.32" cy="983.05" r="114.09" fill="#c05a7a" opacity="0.8"/><circle cx="1118.92" cy="1124.36" r="62.23" fill="#8c3a58" opacity="0.75"/><circle cx="978.19" cy="1338.24" r="169.67" fill="#c05a7a" opacity="0.66"/><circle cx="771.17" cy="1505.66" r="169.67" fill="#e58ea4" opacity="0.64"/><circle cx="554.83" cy="1361.51" r="169.67" fill="#c05a7a" opacity="0.7"/><circle cx="585.2" cy="1150.4" r="169.67" fill="#e58ea4" opacity="0.58"/><circle cx="864.01" cy="1085.94" r="169.67" fill="#c05a7a" opacity="0.89"/><circle cx="762.87" cy="1283.7" r="92.55" fill="#8c3a58" opacity="0.75"/></g>
+  <rect width="2400" height="2400" fill="url(#vig-ph_0016)"/>
+</svg>
