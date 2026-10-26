@@ -15,10 +15,11 @@
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import AppIcon from './AppIcon.vue'
+import VideoPlayer from './VideoPlayer.vue'
 import features from '@/config/album.config'
 import { useToast } from '@/composables/useToast'
 import { downloadPhoto } from '@/utils/download'
-import { formatDate, formatFNumber } from '@/utils/format'
+import { formatBytes, formatDate, formatDuration, formatFNumber } from '@/utils/format'
 import {
   ZOOM_MAX,
   ZOOM_MIN,
@@ -61,6 +62,31 @@ const downloadPercent = ref(0)
 const photo = computed(() => props.photos[props.index] ?? null)
 const total = computed(() => props.photos.length)
 const zoomText = computed(() => `${Math.round(transform.scale * 100)}%`)
+
+/** 当前是否是视频：查看器里所有分支都以此为准 */
+const isVideo = computed(() => photo.value?.isVideo === true)
+
+/** 播放器实例，视频模式下由它接管键盘 */
+const playerRef = ref(null)
+
+/**
+ * 播放器拿到真实时长后回写到媒体对象上。
+ * 数据层没给时长时（例如扫目录时没装 ffmpeg），列表与表格也能因此补上时长。
+ */
+function onPlayerMeta({ duration }) {
+  const media = photo.value
+  if (!media || !Number.isFinite(duration) || duration <= 0) return
+
+  if (!media.video) {
+    // 极端情况：识别成了图片，但用户打开的其实是视频
+    return
+  }
+
+  if (!media.video.duration) {
+    media.video.duration = duration
+    media.video.durationText = formatDuration(duration)
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 /* 尺寸计算                                                                    */
@@ -171,7 +197,8 @@ function preloadNeighbors() {
   const neighbors = [-1, 1, 2]
   neighbors.forEach((offset) => {
     const target = props.photos[(props.index + offset + props.photos.length) % props.photos.length]
-    if (!target?.urls?.regular) return
+    // 视频一律不预加载：列表只显示 poster，<video> 在真正打开时才创建
+    if (!target || target.isVideo || !target.urls?.regular) return
     const img = new Image()
     img.decoding = 'async'
     img.src = target.urls.regular
@@ -229,6 +256,7 @@ function anchorFromEvent(event) {
 }
 
 function onWheel(event) {
+  if (isVideo.value) return
   if (imageState.value !== 'loaded') return
   event.preventDefault()
   zoomByStep(transform, event.deltaY < 0 ? 1 : -1, anchorFromEvent(event))
@@ -251,6 +279,7 @@ function zoomTo(scale) {
 }
 
 function onDoubleClick(event) {
+  if (isVideo.value) return
   if (transform.scale > 1.001) {
     resetFit()
     return
@@ -286,6 +315,7 @@ function toggleFlipV() {
 const dragging = reactive({ active: false, startX: 0, startY: 0, originX: 0, originY: 0 })
 
 function onPointerDown(event) {
+  if (isVideo.value) return
   if (imageState.value !== 'loaded') return
   if (event.button !== undefined && event.button !== 0) return
   dragging.active = true
@@ -349,10 +379,36 @@ function handleKeydown(event) {
   const tag = event.target?.tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
 
+  // 视频模式：←/→ 让位给快退快进，切换媒体改用 PageUp / PageDown
+  if (isVideo.value) {
+    const player = playerRef.value
+    const videoHandlers = {
+      Escape: () => emit('close'),
+      ' ': () => player?.togglePlay(),
+      ArrowLeft: () => player?.seekBy(-5),
+      ArrowRight: () => player?.seekBy(5),
+      PageUp: () => step(-1),
+      PageDown: () => step(1),
+      m: () => player?.toggleMute(),
+      f: () => player?.toggleFullscreen(),
+      i: () => (showInfo.value = !showInfo.value),
+      d: () => handleDownload()
+    }
+
+    const handler = videoHandlers[event.key]
+    if (handler) {
+      event.preventDefault()
+      handler()
+    }
+    return
+  }
+
   const handlers = {
     Escape: () => emit('close'),
     ArrowLeft: () => step(-1),
     ArrowRight: () => step(1),
+    PageUp: () => step(-1),
+    PageDown: () => step(1),
     ArrowUp: () => zoomIn(),
     ArrowDown: () => zoomOut(),
     '+': () => zoomIn(),
@@ -391,19 +447,62 @@ function scrollFilmstripToActive() {
 /* 元信息                                                                      */
 /* -------------------------------------------------------------------------- */
 
+function audioText(video) {
+  if (!video) return '—'
+  if (video.hasAudio === null || video.hasAudio === undefined) return '未知'
+  return video.hasAudio ? `有（${video.audioCodec ? video.audioCodec.toUpperCase() : '未知编码'}）` : '无音轨'
+}
+
 const metaGroups = computed(() => {
   const p = photo.value
   if (!p) return []
+
+  // 共用的两块，图片与视频只是中间那组不同
+  const fileItems = [
+    { label: '文件名', value: p.fileName },
+    { label: '标题', value: p.title || '—' },
+    { label: '描述', value: p.description || '—' },
+    { label: '格式', value: p.mimeType },
+    { label: '体积', value: p.sizeText || '—' }
+  ]
+
+  const orgItems = [
+    { label: '相册', value: p.album?.name || '—' },
+    { label: '上传者', value: p.author?.name || '—' },
+    { label: '地点', value: p.location?.name || '—' },
+    { label: '标签', value: p.tags?.length ? p.tags.join('、') : '—' }
+  ]
+
+  if (p.isVideo) {
+    return [
+      {
+        title: '文件信息',
+        items: [
+          ...fileItems,
+          { label: '分辨率', value: p.resolution || '—' },
+          { label: '时长', value: p.video?.durationText || '—' }
+        ]
+      },
+      {
+        title: '视频信息',
+        items: [
+          { label: '编码', value: p.video?.codec ? p.video.codec.toUpperCase() : '—' },
+          { label: '码率', value: p.video?.bitrate ? `${Math.round(p.video.bitrate / 1000)} kbps` : '—' },
+          { label: '帧率', value: p.video?.frameRate ? `${p.video.frameRate} fps` : '—' },
+          { label: '音轨', value: audioText(p.video) },
+          { label: '旋转', value: p.video?.rotation ? `容器标记 ${p.video.rotation}°` : '无' },
+          { label: '缩略图', value: p.video?.thumbReady ? '已生成' : '未生成，仅显示图标' }
+        ]
+      },
+      { title: '组织信息', items: orgItems }
+    ]
+  }
 
   return [
     {
       title: '文件信息',
       items: [
-        { label: '文件名', value: p.fileName },
-        { label: '标题', value: p.title || '—' },
-        { label: '描述', value: p.description || '—' },
-        { label: '格式', value: p.mimeType },
-        { label: '体积', value: p.sizeText || '—' },
+        ...fileItems,
         { label: '尺寸', value: p.resolution || '—' },
         { label: '像素', value: p.megapixel || '—' }
       ]
@@ -420,15 +519,7 @@ const metaGroups = computed(() => {
         { label: 'ISO', value: p.exif?.iso ? `ISO ${p.exif.iso}` : '—' }
       ]
     },
-    {
-      title: '组织信息',
-      items: [
-        { label: '相册', value: p.album?.name || '—' },
-        { label: '上传者', value: p.author?.name || '—' },
-        { label: '地点', value: p.location?.name || '—' },
-        { label: '标签', value: p.tags?.length ? p.tags.join('、') : '—' }
-      ]
-    }
+    { title: '组织信息', items: orgItems }
   ]
 })
 </script>
@@ -445,6 +536,7 @@ const metaGroups = computed(() => {
               <p class="viewer__counter">
                 {{ index + 1 }} / {{ total }}
                 <span v-if="photo.resolution"> · {{ photo.resolution }}</span>
+                <span v-if="isVideo && photo.video?.durationText"> · {{ photo.video.durationText }}</span>
               </p>
             </div>
           </div>
@@ -455,7 +547,7 @@ const metaGroups = computed(() => {
               type="button"
               class="tool"
               :class="{ 'is-busy': downloading }"
-              :title="downloading ? `下载中 ${downloadPercent}%` : '下载原图（D）'"
+              :title="downloading ? `下载中 ${downloadPercent}%` : isVideo ? '下载视频（D）' : '下载原图（D）'"
               @click="handleDownload"
             >
               <AppIcon :name="downloading ? 'spinner' : 'download'" :size="17" :class="{ 'is-spinning': downloading }" />
@@ -505,7 +597,7 @@ const metaGroups = computed(() => {
           <div
             ref="stageEl"
             class="stage"
-            :class="{ 'is-grabbing': dragging.active, 'is-grabbable': transform.scale > 1.001 }"
+            :class="{ 'is-grabbing': dragging.active, 'is-grabbable': transform.scale > 1.001, 'is-video': isVideo }"
             @wheel="onWheel"
             @pointerdown="onPointerDown"
             @pointermove="onPointerMove"
@@ -513,29 +605,46 @@ const metaGroups = computed(() => {
             @pointercancel="onPointerUp"
             @dblclick="onDoubleClick"
           >
-            <img
-              v-if="photo.urls.full || photo.urls.regular"
-              v-show="imageState === 'loaded'"
-              ref="imageEl"
-              class="stage__img"
-              :src="photo.urls.full || photo.urls.regular"
-              :alt="photo.displayName"
-              :style="imageStyle"
-              draggable="false"
-              @load="onImageLoad"
-              @error="onImageError"
-            />
+            <!-- 视频：整个播放器按 id 重建，切换时上一个会被彻底释放 -->
+            <template v-if="isVideo">
+              <VideoPlayer
+                v-if="features.video"
+                ref="playerRef"
+                :key="photo.id"
+                :media="photo"
+                @meta="onPlayerMeta"
+              />
+              <div v-else class="stage__status">
+                <AppIcon name="video" :size="26" />
+                <p>视频播放已关闭</p>
+              </div>
+            </template>
 
-            <div v-if="imageState === 'loading'" class="stage__status">
-              <AppIcon name="spinner" :size="22" class="is-spinning" />
-              <p>正在加载大图…</p>
-            </div>
+            <template v-else>
+              <img
+                v-if="photo.urls.full || photo.urls.regular"
+                v-show="imageState === 'loaded'"
+                ref="imageEl"
+                class="stage__img"
+                :src="photo.urls.full || photo.urls.regular"
+                :alt="photo.displayName"
+                :style="imageStyle"
+                draggable="false"
+                @load="onImageLoad"
+                @error="onImageError"
+              />
 
-            <div v-else-if="imageState === 'error'" class="stage__status stage__status--error">
-              <AppIcon name="alert" :size="24" />
-              <p>大图加载失败</p>
-              <button type="button" class="btn btn--sm" @click="retryImage">重新加载</button>
-            </div>
+              <div v-if="imageState === 'loading'" class="stage__status">
+                <AppIcon name="spinner" :size="22" class="is-spinning" />
+                <p>正在加载大图…</p>
+              </div>
+
+              <div v-else-if="imageState === 'error'" class="stage__status stage__status--error">
+                <AppIcon name="alert" :size="24" />
+                <p>大图加载失败</p>
+                <button type="button" class="btn btn--sm" @click="retryImage">重新加载</button>
+              </div>
+            </template>
           </div>
 
           <button
@@ -566,7 +675,8 @@ const metaGroups = computed(() => {
 
         <!-- 底部工具条 -->
         <footer class="viewer__tools">
-          <div class="tools">
+          <!-- 图片：缩放 / 旋转 / 翻转 -->
+          <div v-if="!isVideo" class="tools">
             <button type="button" class="tool" title="缩小（- / ↓）" :disabled="transform.scale <= ZOOM_MIN" @click="zoomOut">
               <AppIcon name="zoomOut" :size="17" />
             </button>
@@ -600,6 +710,17 @@ const metaGroups = computed(() => {
             </button>
           </div>
 
+          <!-- 视频：播放控制都在播放器里，这里只留快捷键提示 -->
+          <div v-else class="tools tools--video">
+            <span class="tools__hint">
+              <kbd>空格</kbd> 播放 / 暂停
+              <kbd>← →</kbd> 快退快进 5 秒
+              <kbd>PageUp / PageDown</kbd> 上一个 / 下一个
+              <kbd>F</kbd> 全屏
+              <kbd>M</kbd> 静音
+            </span>
+          </div>
+
           <Transition name="panel">
             <div v-if="showFilmstrip && total > 1" ref="filmstripEl" class="filmstrip">
               <button
@@ -611,7 +732,19 @@ const metaGroups = computed(() => {
                 :title="item.displayName"
                 @click="goTo(i)"
               >
-                <img :src="item.urls.thumb" :alt="item.displayName" loading="lazy" decoding="async" />
+                <img
+                  v-if="item.urls.thumb"
+                  :src="item.urls.thumb"
+                  :alt="item.displayName"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span v-else class="filmstrip__placeholder">
+                  <AppIcon :name="item.isVideo ? 'video' : 'image'" :size="15" />
+                </span>
+                <span v-if="item.isVideo && item.video?.durationText" class="filmstrip__duration">
+                  {{ item.video.durationText }}
+                </span>
               </button>
             </div>
           </Transition>
@@ -737,6 +870,11 @@ const metaGroups = computed(() => {
 
 .stage.is-grabbing {
   cursor: grabbing;
+}
+
+/* 视频由播放器自己处理点击，不需要图片那套光标暗示 */
+.stage.is-video {
+  cursor: default;
 }
 
 .stage__img {
@@ -876,6 +1014,30 @@ const metaGroups = computed(() => {
   background: rgba(255, 255, 255, 0.12);
 }
 
+.tools--video {
+  min-height: 34px;
+}
+
+.tools__hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 11.5px;
+  color: rgba(242, 244, 247, 0.5);
+}
+
+.tools__hint kbd {
+  padding: 1px 5px;
+  margin-left: 8px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: rgba(242, 244, 247, 0.82);
+}
+
 /* 缩略图条 ---------------------------------------------------------------- */
 .filmstrip {
   display: flex;
@@ -887,6 +1049,7 @@ const metaGroups = computed(() => {
 }
 
 .filmstrip__item {
+  position: relative;
   flex: none;
   width: 72px;
   height: 50px;
@@ -903,6 +1066,27 @@ const metaGroups = computed(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.filmstrip__placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: rgba(242, 244, 247, 0.42);
+}
+
+.filmstrip__duration {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(12, 16, 24, 0.8);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
 }
 
 .filmstrip__item:hover {

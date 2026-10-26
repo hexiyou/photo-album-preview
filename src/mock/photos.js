@@ -10,7 +10,10 @@
  *
  * 图片资源由 `npm run gen:mock` 生成到 public/mock/photos/ 下，
  * 每个条目对应 3 个尺寸：_thumb.svg / _regular.svg / _full.svg
+ * 视频资源由同一个脚本生成到 public/mock/videos/ 下（需要 ffmpeg，没有则跳过）
  */
+
+import VIDEO_ASSETS from './video-assets.js'
 
 /** 伪随机：保证每次启动生成的数据完全一致，便于联调与截图对比 */
 function createRandom(seed) {
@@ -134,7 +137,7 @@ function buildPhoto(spec, index) {
     author: AUTHORS[spec.author],
     album: ALBUMS[spec.album],
     location: {
-      name: ['四川 · 甘孜', '上海 · 外滩', '福建 · 东山岛', '甘肃 · 敦煌', '江苏 · 南京'][spec.album] || '',
+      name: LOCATIONS[spec.album] || '',
       latitude: Number((24 + random() * 22).toFixed(4)),
       longitude: Number((100 + random() * 22).toFixed(4))
     },
@@ -169,17 +172,107 @@ function buildPhoto(spec, index) {
   }
 }
 
+/** 相册对应的地点，图片与视频共用 */
+const LOCATIONS = ['四川 · 甘孜', '上海 · 外滩', '福建 · 东山岛', '甘肃 · 敦煌', '江苏 · 南京']
+
+/**
+ * 视频剧本
+ * · duration / width / height 会在 ffmpeg 生成真实素材后被清单里的实测值覆盖
+ * · rotation: 90 用来演示"容器 metadata 竖拍"的宽高归一（1920×1080 → 显示成 1080×1920）
+ * · audio: 延时类视频通常没有音轨，用来演示 hasAudio 字段
+ */
+export const VIDEO_SCENARIOS = [
+  { title: '海边日落延时', desc: '120 张照片合成的 8 秒', album: 2, author: 2, tags: ['延时', '海景'], duration: 8.4, width: 1280, height: 720, fps: 30, audio: false, rotation: 0 },
+  { title: '天桥车流 60fps', desc: '手持稳定器，后期降到 30p 更稳', album: 1, author: 1, tags: ['城市', '夜景', '稳定器'], duration: 12.6, width: 1280, height: 720, fps: 30, audio: true, rotation: 0 },
+  { title: '玉兰花开的十秒', desc: '固定机位，每 5 分钟一张', album: 3, author: 1, tags: ['微距', '花卉', '延时'], duration: 10.2, width: 720, height: 1280, fps: 25, audio: false, rotation: 0 },
+  { title: '雪山云海航拍', desc: '4K 拍摄，导出时压到 1080p', album: 0, author: 0, tags: ['风景', '航拍'], duration: 15.8, width: 1280, height: 720, fps: 30, audio: true, rotation: 0 },
+  { title: '年夜饭的厨房', desc: '手机竖拍，客厅灯光', album: 4, author: 1, tags: ['家庭', '纪实'], duration: 6.5, width: 1280, height: 720, fps: 30, audio: true, rotation: 90 }
+]
+
+function buildVideo(spec, index) {
+  const random = createRandom(index * 4211 + 977)
+  const id = `vd_${String(index + 1).padStart(4, '0')}`
+
+  // 真实素材由 ffmpeg 生成；没有 ffmpeg 时清单里没有这一项，自动退化为图标模式
+  const asset = VIDEO_ASSETS.items?.[id] || {}
+
+  const dayOffset = index * 3 + Math.floor(random() * 3)
+  const takenAt = new Date(Date.UTC(2026, 9, 20, 2, 0, 0) - dayOffset * 86400000 + 8 * 3600000)
+  const createdAt = new Date(takenAt.getTime() + (1 + Math.floor(random() * 20)) * 3600000)
+
+  const duration = Number(asset.duration ?? spec.duration)
+  const width = Number(asset.width ?? spec.width)
+  const height = Number(asset.height ?? spec.height)
+
+  // H.264 1080p 典型码率 2~8 Mbps，用它反推一个合理的体积
+  const bitrate = 2_000_000 + Math.round(random() * 6_000_000)
+  const byteSize = Math.round((duration * bitrate) / 8)
+
+  return {
+    id,
+    kind: 'video',
+    title: spec.title,
+    description: spec.desc,
+    fileName: `VID_${takenAt.getUTCFullYear()}${String(takenAt.getUTCMonth() + 1).padStart(2, '0')}${String(takenAt.getUTCDate()).padStart(2, '0')}_${String(takenAt.getUTCHours()).padStart(2, '0')}${String(takenAt.getUTCMinutes()).padStart(2, '0')}${String(takenAt.getUTCSeconds()).padStart(2, '0')}.mp4`,
+    mimeType: 'video/mp4',
+    size: byteSize,
+    width,
+    height,
+    createdAt: createdAt.toISOString(),
+    updatedAt: createdAt.toISOString(),
+    takenAt: takenAt.toISOString(),
+    tags: spec.tags,
+    author: AUTHORS[spec.author],
+    album: ALBUMS[spec.album],
+    location: {
+      name: LOCATIONS[spec.album] || '',
+      latitude: Number((24 + random() * 22).toFixed(4)),
+      longitude: Number((100 + random() * 22).toFixed(4))
+    },
+    urls: {
+      thumb: asset.poster || '',
+      poster: asset.poster || '',
+      full: asset.media || '',
+      download: asset.media || '',
+      page: `/media/${id}`
+    },
+    video: {
+      duration,
+      codec: 'h264',
+      audioCodec: spec.audio ? 'aac' : '',
+      hasAudio: spec.audio,
+      bitrate,
+      frameRate: spec.fps,
+      rotation: Number(asset.rotation ?? spec.rotation),
+      supported: true
+    },
+    // 视频没有 EXIF，与图片共用同一套字段位
+    exif: null,
+    permissions: {
+      canView: true,
+      canDownload: true,
+      canEdit: false,
+      canDelete: false,
+      canShare: false
+    }
+  }
+}
+
 export const MOCK_PHOTOS = SCENARIOS.map(buildPhoto)
+export const MOCK_VIDEOS = VIDEO_SCENARIOS.map(buildVideo)
+
+/** 图片 + 视频的混合列表，顺序按拍摄时间倒序，与真实接口返回一致 */
+export const MOCK_MEDIA = [...MOCK_PHOTOS, ...MOCK_VIDEOS].sort((a, b) => b.takenAt.localeCompare(a.takenAt))
 
 export const MOCK_ALBUMS = ALBUMS.map((album) => ({
   ...album,
-  photoCount: MOCK_PHOTOS.filter((photo) => photo.album?.id === album.id).length
+  photoCount: MOCK_MEDIA.filter((media) => media.album?.id === album.id).length
 }))
 
-export const MOCK_TAGS = [...new Set(MOCK_PHOTOS.flatMap((photo) => photo.tags))].sort().map((name, index) => ({
+export const MOCK_TAGS = [...new Set(MOCK_MEDIA.flatMap((media) => media.tags))].sort().map((name, index) => ({
   id: `tag_${index + 1}`,
   name,
-  photoCount: MOCK_PHOTOS.filter((photo) => photo.tags.includes(name)).length
+  photoCount: MOCK_MEDIA.filter((media) => media.tags.includes(name)).length
 }))
 
-export default MOCK_PHOTOS
+export default MOCK_MEDIA

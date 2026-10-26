@@ -9,9 +9,22 @@
 
 import { runtimeConfig } from '@/env'
 import httpSource from './sources/httpSource'
+import localSource from './sources/localSource'
 import mockSource from './sources/mockSource'
 
-export const activeSource = runtimeConfig.dataSource === 'api' ? httpSource : mockSource
+/**
+ * 数据源选择：
+ *   api   → 真实后端接口
+ *   local → 本地媒体服务（media/server.mjs，扫描本地目录）
+ *   mock  → 内置演示数据（默认）
+ */
+function resolveSource(name) {
+  if (name === 'api') return httpSource
+  if (name === 'local') return localSource
+  return mockSource
+}
+
+export const activeSource = resolveSource(runtimeConfig.dataSource)
 
 /** 当前生效的数据源名称，UI 上做角标提示用 */
 export const activeSourceName = activeSource.name
@@ -62,7 +75,26 @@ export const photoApi = {
 
   deletePhotos(ids, options = {}) {
     return activeSource.deletePhotos(ids, options)
+  },
+
+  // ---- 目录扫描：仅本地媒体服务提供 ----
+  scanDirectory(payload = {}, options = {}) {
+    if (typeof activeSource.scanDirectory !== 'function') {
+      return Promise.reject(new Error('当前数据源不支持目录扫描，请改用 VITE_DATA_SOURCE=local'))
+    }
+    return activeSource.scanDirectory(payload, options)
+  },
+
+  fetchScanStatus(options = {}) {
+    if (typeof activeSource.fetchScanStatus !== 'function') return Promise.resolve(null)
+    return activeSource.fetchScanStatus(options)
   }
 }
+
+/**
+ * 语义别名：新代码用 mediaApi，指向同一个门面。
+ * 保留 photoApi 是为了让既有 import 继续工作（见"保留 Photo* 命名"的决策）。
+ */
+export const mediaApi = photoApi
 
 export default photoApi

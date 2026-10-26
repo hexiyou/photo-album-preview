@@ -42,11 +42,12 @@ function buildUrl(path, query = {}) {
 /**
  * @template T
  * @param {string} path
- * @param {{query?: object, signal?: AbortSignal, headers?: object, timeout?: number, raw?: boolean}} options
+ * @param {{query?: object, signal?: AbortSignal, headers?: object, timeout?: number,
+ *          method?: string, body?: object}} options
  * @returns {Promise<T>}
  */
 export async function request(path, options = {}) {
-  const { query = {}, signal, headers = {}, timeout } = options
+  const { query = {}, signal, headers = {}, timeout, method = 'GET', body } = options
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(new Error('timeout')), timeout ?? runtimeConfig.requestTimeout)
 
@@ -60,12 +61,14 @@ export async function request(path, options = {}) {
 
   try {
     const response = await fetch(url, {
-      method: 'GET',
+      method,
       headers: {
         Accept: 'application/json',
+        ...(body ? { 'Content-Type': 'application/json' } : {}),
         ...(runtimeConfig.apiToken ? { Authorization: `Bearer ${runtimeConfig.apiToken}` } : {}),
         ...headers
       },
+      body: body ? JSON.stringify(body) : undefined,
       credentials: 'same-origin',
       signal: controller.signal
     })

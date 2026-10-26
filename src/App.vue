@@ -20,26 +20,42 @@ import { usePhotoStore } from '@/stores/usePhotoStore'
 import { activeSourceName } from '@/api/photoApi'
 import { runtimeConfig } from '@/env'
 
-const { state, loadPhotos, loadMeta, refresh, closeViewer, resetQuery, setViewMode, openViewerById, goToPage } =
-  usePhotoStore()
+const {
+  state,
+  totalText,
+  loadPhotos,
+  loadMeta,
+  refresh,
+  closeViewer,
+  resetQuery,
+  setViewMode,
+  openViewerById,
+  goToPage
+} = usePhotoStore()
 
-const sourceLabel = computed(() => (activeSourceName === 'api' ? 'HTTP 接口' : 'Mock 数据'))
-const sourceClass = computed(() => (activeSourceName === 'api' ? 'badge--api' : 'badge--mock'))
+const SOURCE_META = {
+  api: { label: 'HTTP 接口', class: 'badge--api' },
+  local: { label: '本地扫描', class: 'badge--local' },
+  mock: { label: 'Mock 数据', class: 'badge--mock' }
+}
+
+const sourceLabel = computed(() => SOURCE_META[activeSourceName]?.label || activeSourceName)
+const sourceClass = computed(() => SOURCE_META[activeSourceName]?.class || 'badge--mock')
 
 /** 首屏骨架屏数量 */
 const skeletonCount = computed(() => Math.min(state.query.pageSize, 12))
 
 /**
- * URL 直达：支持 ?view=table / ?photo=ph_0003
- * 便于分享「某种视图」或「某一张照片」的链接，也方便联调时直接定位。
+ * URL 直达：支持 ?view=table / ?photo=ph_0003 / ?kind=video
+ * 便于分享「某种视图」「某一张照片」或「只看视频」的链接，也方便联调时直接定位。
  */
 function readUrlParams() {
   const params = new URLSearchParams(window.location.search)
-  return { view: params.get('view'), photo: params.get('photo') }
+  return { view: params.get('view'), photo: params.get('photo'), kind: params.get('kind') }
 }
 
-/** view / photo 传 null 表示不改，传空串表示清除 */
-function writeUrlParams({ view = null, photo = null }) {
+/** view / photo / kind 传 null 表示不改，传空串表示清除 */
+function writeUrlParams({ view = null, photo = null, kind = null }) {
   if (typeof window === 'undefined') return
   const params = new URLSearchParams(window.location.search)
 
@@ -53,13 +69,20 @@ function writeUrlParams({ view = null, photo = null }) {
     else params.delete('photo')
   }
 
+  if (kind !== null) {
+    // all 是默认值，不必污染地址栏
+    if (kind && kind !== 'all') params.set('kind', kind)
+    else params.delete('kind')
+  }
+
   const query = params.toString()
   window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`)
 }
 
 onMounted(async () => {
-  const { view, photo } = readUrlParams()
+  const { view, photo, kind } = readUrlParams()
   if (view === 'table' || view === 'grid') setViewMode(view)
+  if (kind === 'video' || kind === 'image' || kind === 'all') state.query.kind = kind
 
   await Promise.all([loadPhotos(), loadMeta()])
 
@@ -96,7 +119,7 @@ watch(
           <i class="badge__dot" />
           {{ sourceLabel }}
         </span>
-        <span class="app__total">{{ state.pagination.total }} 张照片</span>
+        <span class="app__total">{{ totalText }}</span>
       </div>
     </header>
 
@@ -117,7 +140,7 @@ watch(
         v-else-if="state.error"
         type="error"
         icon="alert"
-        title="照片列表加载失败"
+        title="媒体列表加载失败"
         :description="state.error"
         action-text="重新加载"
         @action="refresh()"
@@ -127,7 +150,7 @@ watch(
       <StatePlaceholder
         v-else-if="!state.photos.length"
         icon="search"
-        title="没有找到照片"
+        title="没有找到文件"
         description="试试换个关键词，或者清空筛选条件。"
         action-text="清空筛选"
         @action="resetQuery()"
@@ -244,6 +267,12 @@ watch(
   border-color: rgba(217, 130, 9, 0.3);
   color: var(--warning);
   background: rgba(217, 130, 9, 0.08);
+}
+
+.badge--local {
+  border-color: rgba(45, 100, 242, 0.32);
+  color: var(--brand);
+  background: rgba(45, 100, 242, 0.08);
 }
 
 .app__total {

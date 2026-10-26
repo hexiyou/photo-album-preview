@@ -21,10 +21,12 @@ const downloadingId = ref('')
 /** 列定义：sortKey 为空表示该列不可排序 */
 const COLUMNS = [
   { key: 'thumb', label: '预览', width: '72px', sortKey: '' },
+  { key: 'kind', label: '类型', width: '88px', sortKey: '' },
   { key: 'name', label: '文件名 / 标题', width: 'auto', sortKey: 'fileName' },
   { key: 'album', label: '相册', width: '120px', sortKey: '' },
   { key: 'tags', label: '标签', width: '160px', sortKey: '' },
   { key: 'resolution', label: '尺寸', width: '110px', sortKey: 'width' },
+  { key: 'duration', label: '时长', width: '78px', sortKey: 'duration' },
   { key: 'size', label: '大小', width: '92px', sortKey: 'size' },
   { key: 'takenAt', label: '拍摄时间', width: '150px', sortKey: 'takenAt' },
   { key: 'author', label: '上传者', width: '96px', sortKey: '' },
@@ -99,8 +101,20 @@ async function handleDownload(photo, event) {
                 loading="lazy"
                 decoding="async"
               />
-              <AppIcon v-else name="image" :size="16" />
+              <AppIcon v-else :name="photo.isVideo ? 'video' : 'image'" :size="16" />
+              <span v-if="photo.isVideo && photo.video?.durationText" class="thumb__duration">
+                {{ photo.video.durationText }}
+              </span>
             </div>
+          </td>
+
+          <td class="col-kind">
+            <span v-if="photo.isVideo" class="kind kind--video">
+              <AppIcon name="video" :size="13" />视频
+            </span>
+            <span v-else class="kind">
+              <AppIcon name="image" :size="13" />图片
+            </span>
           </td>
 
           <td class="col-name">
@@ -123,6 +137,9 @@ async function handleDownload(photo, event) {
           </td>
 
           <td class="col-resolution num">{{ photo.resolution || '—' }}</td>
+          <td class="col-duration num">
+            {{ photo.isVideo ? photo.video?.durationText || '—' : '—' }}
+          </td>
           <td class="col-size num">{{ photo.sizeText || '—' }}</td>
           <td class="col-takenAt">{{ photo.shotAtText || '—' }}</td>
 
@@ -134,13 +151,18 @@ async function handleDownload(photo, event) {
           </td>
 
           <td class="col-actions">
-            <button type="button" class="btn btn--sm" title="查看大图" @click.stop="openViewer(index)">
-              <AppIcon name="zoomIn" :size="14" />
+            <button
+              type="button"
+              class="btn btn--sm"
+              :title="photo.isVideo ? '播放视频' : '查看大图'"
+              @click.stop="openViewer(index)"
+            >
+              <AppIcon :name="photo.isVideo ? 'play' : 'zoomIn'" :size="14" :filled="photo.isVideo" />
             </button>
             <button
               type="button"
               class="btn btn--sm"
-              title="下载照片"
+              :title="photo.isVideo ? '下载视频' : '下载照片'"
               :disabled="downloadingId === photo.id"
               @click.stop="handleDownload(photo, $event)"
             >
@@ -247,6 +269,7 @@ tbody tr:last-child td {
 }
 
 .thumb {
+  position: relative;
   display: grid;
   place-items: center;
   width: 48px;
@@ -255,6 +278,32 @@ tbody tr:last-child td {
   overflow: hidden;
   background: var(--bg-subtle);
   color: var(--text-muted);
+}
+
+.thumb__duration {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(12, 16, 24, 0.76);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.kind--video {
+  color: var(--brand);
 }
 
 .thumb img {

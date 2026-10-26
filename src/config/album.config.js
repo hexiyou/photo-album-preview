@@ -34,6 +34,15 @@ const DEFAULT_FEATURES = {
   delete: false,
   /** 相册 / 标签筛选 */
   filter: true,
+  /** 类型筛选（全部 / 图片 / 视频） */
+  kindFilter: true,
+  /** 视频播放（查看器内走 <video>，关闭则视频项只显示缩略图） */
+  video: true,
+  /**
+   * 目录扫描（依赖本地 media server：media/server.mjs）
+   * 按钮只在 VITE_DATA_SOURCE=local 时出现，其他数据源下自动隐藏
+   */
+  scan: true,
   /** 搜索 */
   search: true,
   /** 排序 */

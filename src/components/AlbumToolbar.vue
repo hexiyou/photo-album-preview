@@ -6,6 +6,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import AppIcon from './AppIcon.vue'
 import features from '@/config/album.config'
+import { activeSourceName, photoApi } from '@/api/photoApi'
 import { usePhotoStore } from '@/stores/usePhotoStore'
 import { downloadPhotos } from '@/utils/download'
 import { useToast } from '@/composables/useToast'
@@ -38,7 +39,14 @@ const SORT_OPTIONS = [
   { value: 'createdAt', label: '上传时间' },
   { value: 'fileName', label: '文件名' },
   { value: 'size', label: '文件大小' },
-  { value: 'width', label: '分辨率' }
+  { value: 'width', label: '分辨率' },
+  { value: 'duration', label: '时长' }
+]
+
+const KIND_OPTIONS = [
+  { value: 'all', label: '全部', icon: 'grid' },
+  { value: 'image', label: '图片', icon: 'image' },
+  { value: 'video', label: '视频', icon: 'video' }
 ]
 
 const activeFilters = computed(() => {
@@ -59,7 +67,7 @@ function clearFilter(key) {
 
 function clearAll() {
   keyword.value = ''
-  setQuery({ keyword: '', albumId: '', tag: '' })
+  setQuery({ keyword: '', albumId: '', tag: '', kind: 'all' })
 }
 
 function toggleOrder() {
@@ -68,12 +76,42 @@ function toggleOrder() {
 
 const batchDownloading = ref(false)
 
+/** 目录扫描只有本地媒体服务提供，其他数据源下按钮不出现 */
+const canScan = computed(() => features.scan && activeSourceName === 'local')
+const scanning = ref(false)
+
+/** 轮询直到扫描结束（扫描是重活，可能要跑几十秒） */
+async function waitForScan(limitMs = 180000) {
+  const startedAt = Date.now()
+  while (Date.now() - startedAt < limitMs) {
+    const status = await photoApi.fetchScanStatus()
+    if (status && status.running === false) return status
+    await new Promise((resolve) => setTimeout(resolve, 700))
+  }
+  throw new Error('扫描超时，请检查目录规模或直接在命令行执行 npm run scan')
+}
+
+async function handleScan() {
+  if (scanning.value) return
+  scanning.value = true
+  try {
+    await photoApi.scanDirectory({})
+    await waitForScan()
+    await refresh()
+    toast.success('扫描完成，列表已更新')
+  } catch (error) {
+    toast.error(`扫描失败：${error?.message || '未知错误'}`)
+  } finally {
+    scanning.value = false
+  }
+}
+
 async function handleDownloadPage() {
   if (!state.photos.length) return
   batchDownloading.value = true
   try {
     await downloadPhotos(state.photos)
-    toast.success(`已下载本页 ${state.photos.length} 张照片`)
+    toast.success(`已下载本页 ${state.photos.length} 个文件`)
   } catch (error) {
     toast.error(`下载失败：${error?.message || '未知错误'}`)
   } finally {
@@ -96,6 +134,22 @@ async function handleDownloadPage() {
         />
         <button v-if="keyword" type="button" class="search__clear" title="清空" @click="clearAll()">
           <AppIcon name="close" :size="14" />
+        </button>
+      </div>
+
+      <div v-if="features.kindFilter" class="segmented" role="tablist" aria-label="类型筛选">
+        <button
+          v-for="option in KIND_OPTIONS"
+          :key="option.value"
+          type="button"
+          class="segmented__item"
+          :class="{ 'is-active': (state.query.kind || 'all') === option.value }"
+          role="tab"
+          :aria-selected="(state.query.kind || 'all') === option.value"
+          @click="setQuery({ kind: option.value })"
+        >
+          <AppIcon :name="option.icon" :size="15" />
+          <span>{{ option.label }}</span>
         </button>
       </div>
 
@@ -174,6 +228,18 @@ async function handleDownloadPage() {
           <span>详细记录</span>
         </button>
       </div>
+
+      <button
+        v-if="canScan"
+        type="button"
+        class="btn btn--sm"
+        :disabled="scanning"
+        title="重新扫描本地目录（服务端 .env 的 MEDIA_SCAN_ROOTS）"
+        @click="handleScan"
+      >
+        <AppIcon :name="scanning ? 'spinner' : 'refresh'" :size="15" :class="{ 'is-spinning': scanning }" />
+        {{ scanning ? '扫描中…' : '扫描目录' }}
+      </button>
 
       <button type="button" class="btn btn--icon" title="刷新" :disabled="state.loading" @click="refresh()">
         <AppIcon name="refresh" :size="16" :class="{ 'is-spinning': state.loading }" />

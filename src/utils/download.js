@@ -154,7 +154,7 @@ export async function downloadPhoto(photo, options = {}) {
 
   if (!url) throw new Error(`downloadPhoto: 照片 ${photo.id} 没有可用的下载地址`)
 
-  return downloadFile(url, photo.downloadName || photo.fileName || `${photo.id}.jpg`, options)
+  return downloadFile(url, photo.downloadName || photo.fileName || `${photo.id}.${photo.extension || 'jpg'}`, options)
 }
 
 /**

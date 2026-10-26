@@ -87,6 +87,24 @@ export function formatMegapixel(width, height) {
   return `${trimZeros((w * h / 1_000_000).toFixed(1))} MP`
 }
 
+/**
+ * 秒 → 时长文本
+ * 23.5 → 00:23   3725 → 01:02:05
+ * 非正数返回空串，交由调用方决定显示占位符
+ */
+export function formatDuration(seconds) {
+  const total = Number(seconds)
+  if (!Number.isFinite(total) || total <= 0) return ''
+
+  const s = Math.floor(total % 60)
+  const m = Math.floor((total / 60) % 60)
+  const h = Math.floor(total / 3600)
+
+  return h > 0
+    ? `${DATE_PADDING(h)}:${DATE_PADDING(m)}:${DATE_PADDING(s)}`
+    : `${DATE_PADDING(m)}:${DATE_PADDING(s)}`
+}
+
 /** 宽高比，保留两位小数 */
 export function formatAspectRatio(width, height) {
   const w = Number(width)
@@ -103,5 +121,6 @@ export default {
   formatFocalLength,
   formatFNumber,
   formatMegapixel,
-  formatAspectRatio
+  formatAspectRatio,
+  formatDuration
 }

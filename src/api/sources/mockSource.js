@@ -7,9 +7,9 @@
  * 切换到真实接口：把 .env 里的 VITE_DATA_SOURCE 改成 api 即可。
  */
 
-import { adaptPhoto, adaptPhotoList } from '@/model/photo'
+import { adaptMedia, adaptMediaList } from '@/model/media'
 import { runtimeConfig } from '@/env'
-import { MOCK_ALBUMS, MOCK_PHOTOS, MOCK_TAGS } from '@/mock/photos'
+import { MOCK_ALBUMS, MOCK_MEDIA, MOCK_TAGS } from '@/mock/photos'
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -17,10 +17,21 @@ async function simulate() {
   if (runtimeConfig.mockDelay > 0) await delay(runtimeConfig.mockDelay)
 }
 
-function filterPhotos({ keyword = '', albumId = '', tag = '', dateFrom = '', dateTo = '' } = {}) {
+/** 原始（未适配）数据上的类型判别，用于查询期过滤 */
+function rawIsVideo(raw) {
+  const declared = String(raw.kind || raw.mediaType || '').toLowerCase()
+  if (declared) return ['video', 'clip', 'movie'].includes(declared)
+  return String(raw.mimeType || '').toLowerCase().startsWith('video/')
+}
+
+function filterMedia({ keyword = '', albumId = '', tag = '', kind = 'all', dateFrom = '', dateTo = '' } = {}) {
   const text = String(keyword).trim().toLowerCase()
 
-  return MOCK_PHOTOS.filter((photo) => {
+  return MOCK_MEDIA.filter((photo) => {
+    if (kind && kind !== 'all') {
+      const isVideo = rawIsVideo(photo)
+      if (kind === 'video' ? !isVideo : isVideo) return false
+    }
     if (albumId && photo.album?.id !== albumId) return false
     if (tag && !photo.tags.includes(tag)) return false
 
@@ -39,7 +50,7 @@ function filterPhotos({ keyword = '', albumId = '', tag = '', dateFrom = '', dat
   })
 }
 
-function sortPhotos(list, sort = 'takenAt', order = 'desc') {
+function sortMedia(list, sort = 'takenAt', order = 'desc') {
   const factor = order === 'asc' ? 1 : -1
   const keyOf = (photo) => {
     switch (sort) {
@@ -49,6 +60,8 @@ function sortPhotos(list, sort = 'takenAt', order = 'desc') {
         return String(photo.fileName || '').toLowerCase()
       case 'width':
         return photo.width ?? 0
+      case 'duration':
+        return Number(photo.video?.duration ?? 0)
       case 'createdAt':
         return new Date(photo.createdAt || 0).getTime()
       case 'takenAt':
@@ -72,14 +85,23 @@ export const mockSource = {
   async fetchPhotos(params = {}) {
     await simulate()
 
-    const { page = 1, pageSize = 20, keyword = '', albumId = '', tag = '', sort = 'takenAt', order = 'desc' } = params
+    const {
+      page = 1,
+      pageSize = 20,
+      keyword = '',
+      albumId = '',
+      tag = '',
+      kind = 'all',
+      sort = 'takenAt',
+      order = 'desc'
+    } = params
 
-    const filtered = sortPhotos(filterPhotos({ keyword, albumId, tag }), sort, order)
+    const filtered = sortMedia(filterMedia({ keyword, albumId, tag, kind }), sort, order)
     const total = filtered.length
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
     const safePage = Math.min(Math.max(1, page), totalPages)
     const start = (safePage - 1) * pageSize
-    const list = adaptPhotoList(filtered.slice(start, start + pageSize))
+    const list = adaptMediaList(filtered.slice(start, start + pageSize))
 
     return {
       list,
@@ -95,14 +117,14 @@ export const mockSource = {
 
   async fetchPhoto(id) {
     await simulate()
-    const raw = MOCK_PHOTOS.find((photo) => photo.id === id)
-    return raw ? adaptPhoto(raw) : null
+    const raw = MOCK_MEDIA.find((media) => media.id === id)
+    return raw ? adaptMedia(raw) : null
   },
 
   async fetchPhotosByIds(ids = []) {
     await simulate()
     const set = new Set(ids)
-    return adaptPhotoList(MOCK_PHOTOS.filter((photo) => set.has(photo.id)))
+    return adaptMediaList(MOCK_MEDIA.filter((media) => set.has(media.id)))
   },
 
   async fetchAlbums() {

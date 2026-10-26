@@ -8,7 +8,9 @@ import { computed } from 'vue'
 const props = defineProps({
   name: { type: String, required: true },
   size: { type: [Number, String], default: 18 },
-  strokeWidth: { type: [Number, String], default: 1.8 }
+  strokeWidth: { type: [Number, String], default: 1.8 },
+  /** 实心填充（播放三角这类图形需要） */
+  filled: { type: Boolean, default: false }
 })
 
 const PATHS = {
@@ -45,7 +47,18 @@ const PATHS = {
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2"/><path d="M12 19.5v2"/><path d="m5.2 5.2 1.4 1.4"/><path d="m17.4 17.4 1.4 1.4"/><path d="M2.5 12h2"/><path d="M19.5 12h2"/><path d="m5.2 18.8 1.4-1.4"/><path d="m17.4 6.6 1.4-1.4"/>',
   moon: '<path d="M20.8 13.2A8.5 8.5 0 1 1 10.8 3.2a7 7 0 0 0 10 10Z"/>',
   monitor: '<rect x="2.5" y="4" width="19" height="12.5" rx="2.2"/><path d="M8.5 20.5h7"/><path d="M12 16.5v4"/>',
-  spinner: '<circle cx="12" cy="12" r="8.5" opacity="0.25"/><path d="M20.5 12a8.5 8.5 0 0 0-8.5-8.5"/>'
+  spinner: '<circle cx="12" cy="12" r="8.5" opacity="0.25"/><path d="M20.5 12a8.5 8.5 0 0 0-8.5-8.5"/>',
+
+  // ---- 视频相关 ----
+  play: '<path d="M8.5 5.5v13l10.5-6.5z"/>',
+  pause: '<path d="M9.5 5v14"/><path d="M14.5 5v14"/>',
+  volume: '<path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/><path d="M16 9.5a3.5 3.5 0 0 1 0 5"/><path d="M18.6 7.2a6.8 6.8 0 0 1 0 9.6"/>',
+  volumeMute: '<path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/><path d="m16.5 9.8 4.2 4.4"/><path d="m20.7 9.8-4.2 4.4"/>',
+  rewind: '<path d="M4 6.5v11l8-5.5z"/><path d="M12.5 6.5v11l8-5.5z"/>',
+  forward: '<path d="M20 6.5v11l-8-5.5z"/><path d="M11.5 6.5v11l-8-5.5z"/>',
+  pip: '<rect x="2.8" y="4.5" width="18.4" height="15" rx="2.4"/><rect x="12.5" y="11.5" width="7" height="6.2" rx="1.4"/>',
+  fullscreen: '<path d="M4 9.2V5.6A1.6 1.6 0 0 1 5.6 4h3.6"/><path d="M14.8 4h3.6A1.6 1.6 0 0 1 20 5.6v3.6"/><path d="M20 14.8v3.6a1.6 1.6 0 0 1-1.6 1.6h-3.6"/><path d="M9.2 20H5.6A1.6 1.6 0 0 1 4 18.4v-3.6"/>',
+  video: '<rect x="2.8" y="4.8" width="18.4" height="14.4" rx="2.4"/><path d="m10.6 9.4 4.8 2.6-4.8 2.6z"/>'
 }
 
 const path = computed(() => PATHS[props.name] || PATHS.image)
@@ -57,7 +70,7 @@ const path = computed(() => PATHS[props.name] || PATHS.image)
     :width="size"
     :height="size"
     viewBox="0 0 24 24"
-    fill="none"
+    :fill="filled ? 'currentColor' : 'none'"
     stroke="currentColor"
     :stroke-width="strokeWidth"
     stroke-linecap="round"

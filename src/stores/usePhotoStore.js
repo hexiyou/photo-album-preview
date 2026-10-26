@@ -23,6 +23,8 @@ function createDefaultQuery() {
     keyword: '',
     albumId: '',
     tag: '',
+    /** 媒体类型：all | image | video */
+    kind: 'all',
     sort: 'takenAt',
     order: 'desc'
   }
@@ -65,6 +67,7 @@ async function loadPhotos(options = {}) {
         keyword: state.query.keyword,
         albumId: state.query.albumId,
         tag: state.query.tag,
+        kind: state.query.kind || 'all',
         sort: state.query.sort,
         order: state.query.order
       },
@@ -81,7 +84,7 @@ async function loadPhotos(options = {}) {
   } catch (error) {
     if (seq !== requestSeq) return null
     state.photos = []
-    state.error = error?.message || '加载照片列表失败'
+    state.error = error?.message || '加载媒体列表失败'
     return null
   } finally {
     if (seq === requestSeq) state.loading = false
@@ -183,7 +186,12 @@ const activePhoto = computed(() => (state.viewer.index >= 0 ? state.photos[state
 const hasPhotos = computed(() => state.photos.length > 0)
 const isEmptyResult = computed(() => !state.loading && !state.error && state.photos.length === 0)
 const selectedPhotos = computed(() => state.photos.filter((photo) => state.selectedIds.includes(photo.id)))
-const totalText = computed(() => `${state.pagination.total || 0} 张照片`)
+const totalText = computed(() => {
+  const total = state.pagination.total || 0
+  if (state.query.kind === 'video') return `${total} 个视频`
+  if (state.query.kind === 'image') return `${total} 张照片`
+  return `${total} 个文件`
+})
 
 export function usePhotoStore() {
   return {

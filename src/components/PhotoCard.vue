@@ -73,12 +73,29 @@ function handleSelect(event) {
         @error="failed = true"
       />
 
-      <div v-if="failed" class="card__failed">
+      <div v-if="failed && !photo.isVideo" class="card__failed">
         <AppIcon name="alert" :size="20" />
         <span>缩略图加载失败</span>
       </div>
 
-      <span v-if="photo.orientation === 'portrait'" class="card__badge">竖幅</span>
+      <!-- 视频专用：没有缩略图（未装 ffmpeg 生成）时退化为一个图标占位 -->
+      <div v-if="photo.isVideo && !photo.urls.thumb" class="card__video-empty">
+        <AppIcon name="video" :size="28" />
+      </div>
+
+      <span v-if="photo.isVideo" class="card__badge card__badge--video">
+        <AppIcon name="video" :size="11" />视频
+      </span>
+      <span v-else-if="photo.orientation === 'portrait'" class="card__badge">竖幅</span>
+
+      <!-- 视频：中央播放按钮 + 右下角时长 -->
+      <template v-if="photo.isVideo">
+        <button type="button" class="card__play" title="播放视频" @click.stop="handleOpen">
+          <AppIcon name="play" :size="18" filled />
+        </button>
+        <span v-if="photo.video?.durationText" class="card__duration">{{ photo.video.durationText }}</span>
+        <span v-else-if="photo.video && !photo.video.supported" class="card__duration card__duration--warn">? </span>
+      </template>
 
       <label v-if="features.selection" class="card__check" @click.stop>
         <input type="checkbox" :checked="selected" @change="handleSelect" />
@@ -89,18 +106,24 @@ function handleSelect(event) {
           <p class="card__name" :title="photo.displayName">{{ photo.displayName }}</p>
           <p class="card__meta">
             <span v-if="photo.resolution">{{ photo.resolution }}</span>
+            <span v-if="photo.isVideo && photo.video?.durationText"> · {{ photo.video.durationText }}</span>
             <span v-if="photo.sizeText"> · {{ photo.sizeText }}</span>
           </p>
         </div>
 
         <div class="card__actions">
-          <button type="button" class="icon-btn" title="查看大图" @click.stop="handleOpen">
-            <AppIcon name="zoomIn" :size="16" />
+          <button
+            type="button"
+            class="icon-btn"
+            :title="photo.isVideo ? '播放视频' : '查看大图'"
+            @click.stop="handleOpen"
+          >
+            <AppIcon :name="photo.isVideo ? 'play' : 'zoomIn'" :size="16" :filled="photo.isVideo" />
           </button>
           <button
             type="button"
             class="icon-btn"
-            title="下载照片"
+            :title="photo.isVideo ? '下载视频' : '下载照片'"
             :disabled="downloading"
             @click.stop="handleDownload"
           >
@@ -200,6 +223,61 @@ function handleSelect(event) {
   color: #fff;
   font-size: 11px;
   backdrop-filter: blur(4px);
+}
+
+.card__badge--video {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 视频：无缩略图时的图标占位 ------------------------------------------ */
+.card__video-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.card__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(12, 16, 24, 0.5);
+  color: #fff;
+  backdrop-filter: blur(3px);
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.card:hover .card__play {
+  background: rgba(12, 16, 24, 0.72);
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.card__duration {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(12, 16, 24, 0.74);
+  color: #fff;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  backdrop-filter: blur(3px);
+}
+
+.card__duration--warn {
+  background: rgba(186, 117, 23, 0.85);
 }
 
 .card__check {
