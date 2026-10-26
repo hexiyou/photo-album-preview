@@ -30,7 +30,8 @@ const {
   resetQuery,
   setViewMode,
   openViewerById,
-  goToPage
+  goToPage,
+  applyMediaUpdate
 } = usePhotoStore()
 
 const SOURCE_META = {
@@ -179,6 +180,7 @@ watch(
       :open="state.viewer.open"
       @update:index="state.viewer.index = $event"
       @close="closeViewer"
+      @meta-saved="applyMediaUpdate"
     />
 
     <ToastHost />

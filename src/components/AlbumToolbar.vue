@@ -10,6 +10,7 @@ import { activeSourceName, photoApi } from '@/api/photoApi'
 import { usePhotoStore } from '@/stores/usePhotoStore'
 import { downloadPhotos } from '@/utils/download'
 import { useToast } from '@/composables/useToast'
+import { hoverPreviewEnabled, setHoverPreviewEnabled } from '@/composables/useHoverPreview'
 
 const { state, setQuery, setViewMode, refresh } = usePhotoStore()
 const toast = useToast()
@@ -32,7 +33,11 @@ watch(
   }
 )
 
-onBeforeUnmount(() => clearTimeout(debounceTimer))
+onBeforeUnmount(() => {
+  clearTimeout(debounceTimer)
+  // 切页面时必须掐断 SSE，否则连接会一直挂着直到超时
+  closeStream()
+})
 
 const SORT_OPTIONS = [
   { value: 'takenAt', label: '拍摄时间' },
@@ -80,7 +85,24 @@ const batchDownloading = ref(false)
 const canScan = computed(() => features.scan && activeSourceName === 'local')
 const scanning = ref(false)
 
-/** 轮询直到扫描结束（扫描是重活，可能要跑几十秒） */
+/** 列表里确实有视频时才显示悬停预览开关（纯图片相册里这个按钮没有意义） */
+const hasVideo = computed(() => state.photos.some((item) => item.isVideo))
+
+function toggleHoverPreview() {
+  const next = !hoverPreviewEnabled.value
+  setHoverPreviewEnabled(next)
+  toast.info(next ? '已开启卡片悬停静音预览' : '已关闭卡片悬停静音预览')
+}
+
+/** 环境不支持 SSE 时的专用标记，用于决定要不要退回轮询 */
+class NoStreamError extends Error {
+  constructor() {
+    super('当前环境不支持 Server-Sent Events')
+    this.name = 'NoStreamError'
+  }
+}
+
+/** 轮询直到扫描结束（扫描是重活，可能要跑几十秒）—— SSE 不可用时的兜底 */
 async function waitForScan(limitMs = 180000) {
   const startedAt = Date.now()
   while (Date.now() - startedAt < limitMs) {
@@ -91,20 +113,94 @@ async function waitForScan(limitMs = 180000) {
   throw new Error('扫描超时，请检查目录规模或直接在命令行执行 npm run scan')
 }
 
+const scanProgress = ref(null)
+let scanStream = null
+
+function closeStream() {
+  if (scanStream) {
+    scanStream.close()
+    scanStream = null
+  }
+}
+
+/**
+ * 走 SSE 完成一次扫描。
+ *
+ * 顺序很关键：**先连上再触发**。如果反过来（先 POST 再连），
+ * 短目录的扫描可能在连接建立前就跑完了，一帧进度都收不到。
+ * snapshot 帧就是"监听已就位"的信号，收到它才去发起扫描。
+ */
+function scanWithStream() {
+  return new Promise((resolve, reject) => {
+    let settled = false
+
+    const finish = (error) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      closeStream()
+      error ? reject(error) : resolve()
+    }
+
+    const timer = setTimeout(
+      () => finish(new Error('扫描超时，请检查目录规模或直接在命令行执行 npm run scan')),
+      180000
+    )
+
+    scanStream = photoApi.openScanStream({
+      onSnapshot: async (data) => {
+        // 已经有扫描在跑就不重复触发，安静地看它的进度即可
+        if (data.running) return
+        try {
+          await photoApi.scanDirectory({})
+        } catch (error) {
+          finish(error)
+        }
+      },
+      onProgress: (data) => {
+        if (Number.isFinite(data.current) && Number.isFinite(data.total)) {
+          scanProgress.value = { current: data.current, total: data.total }
+        }
+      },
+      onDone: (data) => finish(data?.error ? new Error(data.error) : null),
+      onError: () => {
+        /* 断线本身不判失败：浏览器会自动重连，真超时了由 timer 兜底 */
+      }
+    })
+
+    if (!scanStream) finish(new NoStreamError())
+  })
+}
+
 async function handleScan() {
   if (scanning.value) return
   scanning.value = true
+  scanProgress.value = null
+
   try {
-    await photoApi.scanDirectory({})
-    await waitForScan()
+    await scanWithStream().catch(async (error) => {
+      // 只有"环境不支持 SSE"才退轮询；其余错误是真实的扫描失败，必须抛出
+      if (error?.name !== 'NoStreamError') throw error
+      await photoApi.scanDirectory({})
+      await waitForScan()
+    })
     await refresh()
     toast.success('扫描完成，列表已更新')
   } catch (error) {
     toast.error(`扫描失败：${error?.message || '未知错误'}`)
   } finally {
+    closeStream()
     scanning.value = false
+    scanProgress.value = null
   }
 }
+
+/** 按钮文案：能拿到进度就显示"第几个 / 共几个" */
+const scanText = computed(() => {
+  if (!scanning.value) return '扫描目录'
+  const total = scanProgress.value?.total
+  return total ? `扫描中 ${scanProgress.value.current}/${total}` : '扫描中…'
+})
 
 async function handleDownloadPage() {
   if (!state.photos.length) return
@@ -230,6 +326,18 @@ async function handleDownloadPage() {
       </div>
 
       <button
+        v-if="features.hoverPreview && hasVideo"
+        type="button"
+        class="btn btn--icon"
+        :class="{ 'is-off': !hoverPreviewEnabled }"
+        :aria-pressed="hoverPreviewEnabled"
+        :title="hoverPreviewEnabled ? '卡片悬停时静音预览：开（点击关掉）' : '卡片悬停时静音预览：关（点击开启）'"
+        @click="toggleHoverPreview"
+      >
+        <AppIcon :name="hoverPreviewEnabled ? 'volume' : 'volumeMute'" :size="16" />
+      </button>
+
+      <button
         v-if="canScan"
         type="button"
         class="btn btn--sm"
@@ -238,7 +346,7 @@ async function handleDownloadPage() {
         @click="handleScan"
       >
         <AppIcon :name="scanning ? 'spinner' : 'refresh'" :size="15" :class="{ 'is-spinning': scanning }" />
-        {{ scanning ? '扫描中…' : '扫描目录' }}
+        {{ scanText }}
       </button>
 
       <button type="button" class="btn btn--icon" title="刷新" :disabled="state.loading" @click="refresh()">

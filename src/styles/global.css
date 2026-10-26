@@ -230,6 +230,13 @@ html.theme-animate body * {
   padding: 0;
 }
 
+/* 开关型按钮的"关闭"态：明显弱化，一眼能看出功能没在工作 */
+.btn--icon.is-off {
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  border-color: var(--border);
+}
+
 .btn--sm {
   height: 30px;
   font-size: 12.5px;

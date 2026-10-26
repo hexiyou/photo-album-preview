@@ -39,6 +39,20 @@ const DEFAULT_FEATURES = {
   /** 视频播放（查看器内走 <video>，关闭则视频项只显示缩略图） */
   video: true,
   /**
+   * 卡片悬停静音预览
+   * 关掉后卡片就只显示缩略图。这个开关是"能力是否存在"的总闸，
+   * 用户自己的偏好另有一套（工具栏按钮 + localStorage），两者都关才不预览
+   */
+  hoverPreview: true,
+  /** 进度条拖动时的画面预览（按需雪碧图 / 实时取帧兜底） */
+  scrubPreview: true,
+  /**
+   * sidecar 元数据编辑（写入与源文件同目录的 *.meta.json）
+   * 默认关：本期定位仍是"浏览为主"，管理类能力不主动暴露。
+   * 需要时访问 ?feat.metaEdit=1 打开
+   */
+  metaEdit: false,
+  /**
    * 目录扫描（依赖本地 media server：media/server.mjs）
    * 按钮只在 VITE_DATA_SOURCE=local 时出现，其他数据源下自动隐藏
    */

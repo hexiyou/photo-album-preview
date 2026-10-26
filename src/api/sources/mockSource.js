@@ -10,6 +10,7 @@
 import { adaptMedia, adaptMediaList } from '@/model/media'
 import { runtimeConfig } from '@/env'
 import { MOCK_ALBUMS, MOCK_MEDIA, MOCK_TAGS } from '@/mock/photos'
+import { VIDEO_ASSETS } from '@/mock/video-assets'
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -151,6 +152,21 @@ export const mockSource = {
 
   async deletePhotos() {
     throw new Error('[mock] 删除接口尚未接入：请先用 VITE_DATA_SOURCE=api 指向真实后端')
+  },
+
+  /**
+   * 演示雪碧图：gen:mock 已经把这张图抽好写进 VIDEO_ASSETS，
+   * 所以 mock 通路永远是 ready —— 没有"生成中"这个中间态
+   */
+  async fetchSprite(id) {
+    const sprite = VIDEO_ASSETS.available ? VIDEO_ASSETS.items?.[id]?.sprite : null
+    return sprite
+      ? { state: 'ready', sprite }
+      : { state: 'unavailable', reason: '演示数据未包含雪碧图，重跑 npm run gen:mock 即可生成' }
+  },
+
+  async updateMeta() {
+    throw new Error('[mock] 演示数据源不支持写入元数据，请改用 VITE_DATA_SOURCE=local')
   }
 }
 

@@ -179,6 +179,17 @@ function clearSelection() {
   state.selectedIds = []
 }
 
+/**
+ * 把服务端返回的最新一条记录合并回列表（用于 sidecar 元数据写入后的即时刷新）。
+ * 保持"同一条记录就地更新"而不是整页重拉，避免滚动位置与选中态被打断。
+ */
+function applyMediaUpdate(media) {
+  if (!media?.id) return null
+  const index = state.photos.findIndex((item) => item.id === media.id)
+  if (index >= 0) state.photos.splice(index, 1, media)
+  return media
+}
+
 // ---------------------------------------------------------------------------
 // getter
 // ---------------------------------------------------------------------------
@@ -214,7 +225,8 @@ export function usePhotoStore() {
     closeViewer,
     stepViewer,
     toggleSelect,
-    clearSelection
+    clearSelection,
+    applyMediaUpdate
   }
 }
 

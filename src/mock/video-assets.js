@@ -10,11 +10,22 @@
 
 export const VIDEO_ASSETS = {
   available: true,
-  generatedAt: "2026-10-26T16:17:49.322Z",
+  generatedAt: "2026-10-26T18:06:53.759Z",
   items: {
   "vd_0001": {
     "media": "/mock/videos/vd_0001.mp4",
     "poster": "/mock/videos/vd_0001_poster.jpg",
+    "sprite": {
+      "image": "/mock/videos/vd_0001_sprite.jpg",
+      "cols": 10,
+      "rows": 2,
+      "count": 16,
+      "interval": 0.5,
+      "cellWidth": 160,
+      "cellHeight": 90,
+      "width": 1600,
+      "height": 180
+    },
     "duration": 8.4,
     "width": 1280,
     "height": 720,
@@ -25,6 +36,17 @@ export const VIDEO_ASSETS = {
   "vd_0002": {
     "media": "/mock/videos/vd_0002.mp4",
     "poster": "/mock/videos/vd_0002_poster.jpg",
+    "sprite": {
+      "image": "/mock/videos/vd_0002_sprite.jpg",
+      "cols": 10,
+      "rows": 3,
+      "count": 25,
+      "interval": 0.5,
+      "cellWidth": 160,
+      "cellHeight": 90,
+      "width": 1600,
+      "height": 270
+    },
     "duration": 12.6,
     "width": 1280,
     "height": 720,
@@ -35,6 +57,17 @@ export const VIDEO_ASSETS = {
   "vd_0003": {
     "media": "/mock/videos/vd_0003.mp4",
     "poster": "/mock/videos/vd_0003_poster.jpg",
+    "sprite": {
+      "image": "/mock/videos/vd_0003_sprite.jpg",
+      "cols": 10,
+      "rows": 2,
+      "count": 20,
+      "interval": 0.5,
+      "cellWidth": 160,
+      "cellHeight": 284,
+      "width": 1600,
+      "height": 568
+    },
     "duration": 10.2,
     "width": 720,
     "height": 1280,
@@ -45,6 +78,17 @@ export const VIDEO_ASSETS = {
   "vd_0004": {
     "media": "/mock/videos/vd_0004.mp4",
     "poster": "/mock/videos/vd_0004_poster.jpg",
+    "sprite": {
+      "image": "/mock/videos/vd_0004_sprite.jpg",
+      "cols": 10,
+      "rows": 4,
+      "count": 31,
+      "interval": 0.5,
+      "cellWidth": 160,
+      "cellHeight": 90,
+      "width": 1600,
+      "height": 360
+    },
     "duration": 15.8,
     "width": 1280,
     "height": 720,
@@ -55,6 +99,17 @@ export const VIDEO_ASSETS = {
   "vd_0005": {
     "media": "/mock/videos/vd_0005.mp4",
     "poster": "/mock/videos/vd_0005_poster.jpg",
+    "sprite": {
+      "image": "/mock/videos/vd_0005_sprite.jpg",
+      "cols": 10,
+      "rows": 2,
+      "count": 13,
+      "interval": 0.5,
+      "cellWidth": 160,
+      "cellHeight": 284,
+      "width": 1600,
+      "height": 568
+    },
     "duration": 6.5,
     "width": 1280,
     "height": 720,

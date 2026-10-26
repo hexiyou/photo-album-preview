@@ -76,9 +76,32 @@ export const httpSource = {
     return Array.isArray(data) ? data : data?.list ?? []
   },
 
-  async fetchTags(options = {}) {
+  async   fetchTags(options = {}) {
     const data = await request('/tags', { signal: options.signal })
     return Array.isArray(data) ? data : data?.list ?? []
+  },
+
+  /**
+   * 进度预览雪碧图
+   * 后端若未提供 GET /sprite/{id}，这里会拿到 404，调用方应据此降级为实时取帧。
+   * @returns {Promise<{state:string, sprite?:object, reason?:string}>}
+   */
+  async fetchSprite(id, options = {}) {
+    const data = await request(`/sprite/${encodeURIComponent(id)}`, { signal: options.signal })
+    return { state: data?.state || 'ready', sprite: data?.sprite ?? data, reason: data?.reason || '' }
+  },
+
+  /**
+   * 修改媒体信息（标题 / 描述 / 标签 / 相册）
+   * 走的是 API.md 里预留的 PATCH /photos/{id}
+   */
+  async updateMeta(id, patch = {}, options = {}) {
+    const data = await request(`/photos/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: patch,
+      signal: options.signal
+    })
+    return adaptMedia(data?.photo ?? data?.media ?? data)
   },
 
   // -------------------------------------------------------------------------

@@ -17,6 +17,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import AppIcon from './AppIcon.vue'
 import VideoPlayer from './VideoPlayer.vue'
 import features from '@/config/album.config'
+import { activeSourceName, photoApi } from '@/api/photoApi'
 import { useToast } from '@/composables/useToast'
 import { downloadPhoto } from '@/utils/download'
 import { formatBytes, formatDate, formatDuration, formatFNumber } from '@/utils/format'
@@ -40,7 +41,7 @@ const props = defineProps({
   open: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['close', 'update:index'])
+const emit = defineEmits(['close', 'update:index', 'meta-saved'])
 
 const toast = useToast()
 
@@ -65,6 +66,60 @@ const zoomText = computed(() => `${Math.round(transform.scale * 100)}%`)
 
 /** 当前是否是视频：查看器里所有分支都以此为准 */
 const isVideo = computed(() => photo.value?.isVideo === true)
+
+/* -------------------------------------------------------------------------- */
+/* sidecar 元数据编辑（默认关闭，?feat.metaEdit=1 打开）                        */
+/* -------------------------------------------------------------------------- */
+
+/** 只有本地索引通路才写得进 sidecar；mock / 远端接口都没有可写的文件 */
+const canEditMeta = computed(() => features.metaEdit && activeSourceName === 'local')
+const metaEditing = ref(false)
+const metaSaving = ref(false)
+const newTag = ref('')
+const draft = ref({ title: '', description: '', tags: [], album: '' })
+
+function startEditMeta() {
+  const item = photo.value
+  draft.value = {
+    title: item?.title || '',
+    description: item?.description || '',
+    tags: [...(item?.tags || [])],
+    album: item?.album?.name || ''
+  }
+  newTag.value = ''
+  metaEditing.value = true
+}
+
+function cancelEditMeta() {
+  metaEditing.value = false
+}
+
+function addTag() {
+  const value = String(newTag.value || '').trim()
+  if (!value) return
+  if (!draft.value.tags.includes(value)) draft.value.tags.push(value)
+  newTag.value = ''
+}
+
+function removeTag(index) {
+  draft.value.tags.splice(index, 1)
+}
+
+async function saveMeta() {
+  if (!photo.value?.id) return
+  metaSaving.value = true
+  try {
+    const updated = await photoApi.updateMeta(photo.value.id, { ...draft.value })
+    // 通知父层把这条记录合并回列表，保证切走再切回来看到的是新值
+    emit('meta-saved', updated)
+    metaEditing.value = false
+    toast.success('元数据已写入 sidecar')
+  } catch (error) {
+    toast.error(`保存失败：${error?.message || '未知错误'}`)
+  } finally {
+    metaSaving.value = false
+  }
+}
 
 /** 播放器实例，视频模式下由它接管键盘 */
 const playerRef = ref(null)
@@ -669,6 +724,66 @@ const metaGroups = computed(() => {
                   </div>
                 </dl>
               </div>
+
+              <!-- sidecar 元数据编辑：默认关闭，访问 ?feat.metaEdit=1 打开 -->
+              <div v-if="canEditMeta" class="panel__group panel__group--edit">
+                <h4 class="panel__title">
+                  元数据
+                  <span class="panel__hint">写入 *.meta.json</span>
+                </h4>
+
+                <button v-if="!metaEditing" type="button" class="btn btn--sm" @click="startEditMeta">
+                  编辑
+                </button>
+
+                <template v-else>
+                  <label class="edit__label">
+                    <span>标题</span>
+                    <input v-model="draft.title" class="edit__input" placeholder="留空则用文件名" />
+                  </label>
+
+                  <label class="edit__label">
+                    <span>描述</span>
+                    <textarea v-model="draft.description" class="edit__input" rows="3" placeholder="备注 / 说明" />
+                  </label>
+
+                  <label class="edit__label">
+                    <span>相册</span>
+                    <input v-model="draft.album" class="edit__input" placeholder="留空则用所在目录名" />
+                  </label>
+
+                  <div class="edit__label">
+                    <span>标签</span>
+                    <div class="edit__tags">
+                      <button
+                        v-for="(tag, index) in draft.tags"
+                        :key="`${tag}-${index}`"
+                        type="button"
+                        class="chip chip--removable"
+                        :title="`移除标签：${tag}`"
+                        @click="removeTag(index)"
+                      >
+                        {{ tag }} ×
+                      </button>
+                      <input
+                        v-model="newTag"
+                        class="edit__input edit__input--tag"
+                        placeholder="输入后回车添加"
+                        @keydown.enter.prevent="addTag"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="edit__actions">
+                    <button type="button" class="btn btn--sm" :disabled="metaSaving" @click="saveMeta">
+                      {{ metaSaving ? '保存中…' : '保存' }}
+                    </button>
+                    <button type="button" class="btn btn--sm btn--ghost" @click="cancelEditMeta">
+                      取消
+                    </button>
+                  </div>
+                </template>
+              </div>
             </aside>
           </Transition>
         </div>
@@ -941,17 +1056,78 @@ const metaGroups = computed(() => {
   overflow-y: auto;
 }
 
+.panel__group--edit {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.edit__label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: rgba(242, 244, 247, 0.5);
+}
+
+.edit__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(242, 244, 247, 0.92);
+  font: inherit;
+  font-size: 12.5px;
+  resize: vertical;
+}
+
+.edit__input:focus {
+  outline: none;
+  border-color: rgba(76, 125, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.edit__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.edit__input--tag {
+  width: 120px;
+  flex: none;
+}
+
+.edit__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 3px;
+}
+
 .panel__group + .panel__group {
   margin-top: 18px;
 }
 
 .panel__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   margin: 0 0 8px;
   font-size: 11.5px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgba(242, 244, 247, 0.45);
+}
+
+.panel__hint {
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(242, 244, 247, 0.32);
 }
 
 .panel__list {

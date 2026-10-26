@@ -2,10 +2,11 @@
 /**
  * 单张照片卡片（缩略图网格单元）
  */
-import { ref } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import AppIcon from './AppIcon.vue'
 import features from '@/config/album.config'
 import { useToast } from '@/composables/useToast'
+import { useHoverPreview } from '@/composables/useHoverPreview'
 import { downloadPhoto } from '@/utils/download'
 
 const props = defineProps({
@@ -21,6 +22,21 @@ const loaded = ref(false)
 const failed = ref(false)
 const downloading = ref(false)
 
+const { previewing, previewFailed, videoRef, arm, disarm, stop } = useHoverPreview(toRef(props, 'photo'))
+
+/** 预览真的把画面播出来了（起播失败时仍旧显示缩略图 + 播放按钮） */
+const showingPreview = computed(() => previewing.value && !previewFailed.value)
+
+/** 触屏没有"悬停"语义，pen/touch 一律不触发预览 */
+function handlePointerEnter(event) {
+  if (event.pointerType && event.pointerType !== 'mouse') return
+  arm()
+}
+
+function handlePointerLeave() {
+  disarm()
+}
+
 async function handleDownload(event) {
   event.stopPropagation()
   downloading.value = true
@@ -35,6 +51,8 @@ async function handleDownload(event) {
 }
 
 function handleOpen() {
+  // 打开查看器前必须掐掉悬停预览，否则卡片会在后台继续解码播放
+  stop()
   emit('open', props.index)
 }
 
@@ -54,6 +72,8 @@ function handleSelect(event) {
     @click="handleOpen"
     @keydown.enter.prevent="handleOpen"
     @keydown.space.prevent="handleOpen"
+    @pointerenter="handlePointerEnter"
+    @pointerleave="handlePointerLeave"
   >
     <!-- 缩略图统一 4:3 裁剪，保证网格行高一致；完整比例在详情/大图里看 -->
     <div class="card__media">
@@ -73,6 +93,19 @@ function handleSelect(event) {
         @error="failed = true"
       />
 
+      <!-- 悬停静音预览：停满 400ms 才挂载，鼠标移开即卸载并释放解码资源。
+           不设 preload，让边下边播自然发生；起播失败时静默退回缩略图 -->
+      <video
+        v-if="showingPreview"
+        ref="videoRef"
+        class="card__preview"
+        :src="photo.playUrl"
+        muted
+        loop
+        playsinline
+        disablepictureinpicture
+      />
+
       <div v-if="failed && !photo.isVideo" class="card__failed">
         <AppIcon name="alert" :size="20" />
         <span>缩略图加载失败</span>
@@ -90,7 +123,17 @@ function handleSelect(event) {
 
       <!-- 视频：中央播放按钮 + 右下角时长 -->
       <template v-if="photo.isVideo">
-        <button type="button" class="card__play" title="播放视频" @click.stop="handleOpen">
+        <!-- 预览进行中不显示播放按钮：画面本来就在动，再盖个按钮是噪音 -->
+        <span v-if="showingPreview" class="card__preview-tag" title="悬停静音预览">
+          <AppIcon name="volumeMute" :size="12" />
+        </span>
+        <button
+          v-if="!showingPreview"
+          type="button"
+          class="card__play"
+          title="播放视频"
+          @click.stop="handleOpen"
+        >
           <AppIcon name="play" :size="18" filled />
         </button>
         <span v-if="photo.video?.durationText" class="card__duration">{{ photo.video.durationText }}</span>
@@ -239,6 +282,31 @@ function handleSelect(event) {
   place-items: center;
   background: var(--bg-subtle);
   color: var(--text-muted);
+}
+
+/* 悬停静音预览 ---------------------------------------------------------- */
+.card__preview {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--surface-sunken);
+}
+
+.card__preview-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(12, 16, 24, 0.62);
+  color: #fff;
+  backdrop-filter: blur(3px);
 }
 
 .card__play {

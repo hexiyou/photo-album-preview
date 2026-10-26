@@ -88,6 +88,35 @@ export const photoApi = {
   fetchScanStatus(options = {}) {
     if (typeof activeSource.fetchScanStatus !== 'function') return Promise.resolve(null)
     return activeSource.fetchScanStatus(options)
+  },
+
+  // ---- 进度预览雪碧图（P2）----
+  /**
+   * 拿不到雪碧图一律降级成 unavailable，**不抛错** ——
+   * 它只是锦上添花，绝不能让"锦"的问题打断视频本身的播放。
+   */
+  async fetchSprite(id, options = {}) {
+    if (typeof activeSource.fetchSprite !== 'function') return { state: 'unavailable' }
+    try {
+      return await activeSource.fetchSprite(id, options)
+    } catch (error) {
+      if (options.throwOnError) throw error
+      return { state: 'unavailable', reason: error?.message || '获取雪碧图失败' }
+    }
+  },
+
+  // ---- sidecar 元数据写入（P2）----
+  updateMeta(id, patch = {}, options = {}) {
+    if (typeof activeSource.updateMeta !== 'function') {
+      return Promise.reject(new Error('当前数据源不支持写入元数据，请改用 VITE_DATA_SOURCE=local'))
+    }
+    return activeSource.updateMeta(id, patch, options)
+  },
+
+  // ---- 扫描进度 SSE（P2）：环境不支持返回 null，调用方自行退回轮询 ----
+  openScanStream(handlers = {}) {
+    if (typeof activeSource.openScanStream !== 'function') return null
+    return activeSource.openScanStream(handlers)
   }
 }
 
