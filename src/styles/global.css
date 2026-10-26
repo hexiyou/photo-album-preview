@@ -23,6 +23,17 @@
   --warning: #d98209;
   --danger: #dc3b46;
 
+  /* 场景专用：无法直接用中性色表达的部分 */
+  --row-alt: #fcfdfe;
+  --toolbar-bg: rgba(245, 246, 248, 0.86);
+  --skeleton-a: #eef0f4;
+  --skeleton-b: #f7f8fa;
+  --scrollbar-thumb: rgba(139, 149, 163, 0.35);
+  --scrollbar-thumb-hover: rgba(139, 149, 163, 0.6);
+  --scrim: rgba(12, 16, 24, 0.78);
+
+  color-scheme: light;
+
   --radius-sm: 8px;
   --radius: 12px;
   --radius-lg: 18px;
@@ -36,6 +47,48 @@
 
   --font: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
   --mono: 'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+}
+
+/* ---------------------------------------------------------------------------
+ * 暗色主题：只覆盖设计令牌，组件样式一律不写死颜色，切换即全站生效
+ * ------------------------------------------------------------------------- */
+[data-theme='dark'] {
+  --brand: #5b8cff;
+  --brand-strong: #7aa2ff;
+  --brand-soft: rgba(91, 140, 255, 0.16);
+  --brand-soft-hover: rgba(91, 140, 255, 0.24);
+
+  --bg: #0e1116;
+  --bg-subtle: #171b22;
+  --surface: #161a21;
+  --surface-hover: #1d222b;
+  --surface-sunken: #12161c;
+
+  --border: #262c36;
+  --border-strong: #333b47;
+
+  --text: #e6eaf0;
+  --text-secondary: #adb7c4;
+  --text-muted: #8a94a2;
+  --text-inverse: #0e1116;
+
+  --success: #3fb27d;
+  --warning: #e8a33d;
+  --danger: #f06570;
+
+  --row-alt: rgba(255, 255, 255, 0.022);
+  --toolbar-bg: rgba(14, 17, 22, 0.82);
+  --skeleton-a: #1b2027;
+  --skeleton-b: #242a33;
+  --scrollbar-thumb: rgba(150, 160, 173, 0.28);
+  --scrollbar-thumb-hover: rgba(150, 160, 173, 0.5);
+  --scrim: rgba(6, 8, 12, 0.82);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
 }
 
 * {
@@ -85,19 +138,33 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 149, 163, 0.35);
+  background: var(--scrollbar-thumb);
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 149, 163, 0.6);
+  background: var(--scrollbar-thumb-hover);
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+ * 主题切换过渡：切换瞬间由 useTheme 给 <html> 挂上 .theme-animate（约 220ms 后移除），
+ * 只让颜色做短暂渐变，避免明暗跳变太生硬，同时不影响常态下的性能与动画。
+ * ------------------------------------------------------------------------- */
+html.theme-animate body,
+html.theme-animate body * {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    fill 0.2s ease !important;
 }
 
 /* 通用按钮 --------------------------------------------------------------- */

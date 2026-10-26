@@ -1,10 +1,33 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
     <title>在线相册 · Photo Album</title>
+    <script>
+      /**
+       * 首屏主题预置：必须在样式生效前跑完，否则刷新时会闪一下白底再变暗。
+       * 优先读 localStorage 里保存的用户偏好，没有则跟随系统。
+       * 逻辑与 src/composables/useTheme.js 保持一致（存储键 photo-album:theme）。
+       */
+      ;(function () {
+        try {
+          var saved = localStorage.getItem('photo-album:theme')
+          var theme =
+            saved === 'light' || saved === 'dark'
+              ? saved
+              : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+          document.documentElement.setAttribute('data-theme', theme)
+          var meta = document.querySelector('meta[name="theme-color"]')
+          if (meta) meta.setAttribute('content', theme === 'dark' ? '#0e1116' : '#ffffff')
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light')
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

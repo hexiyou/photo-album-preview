@@ -229,7 +229,7 @@ function handleSelect(event) {
   justify-content: space-between;
   gap: 8px;
   padding: 28px 10px 10px;
-  background: linear-gradient(to top, rgba(12, 16, 24, 0.78), rgba(12, 16, 24, 0));
+  background: linear-gradient(to top, var(--scrim), transparent);
   color: #fff;
   opacity: 0;
   transform: translateY(6px);

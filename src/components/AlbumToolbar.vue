@@ -203,7 +203,7 @@ async function handleDownloadPage() {
   gap: 12px;
   flex-wrap: wrap;
   padding: 12px 24px;
-  background: rgba(245, 246, 248, 0.86);
+  background: var(--toolbar-bg);
   backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid var(--border);
 }

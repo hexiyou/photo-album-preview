@@ -13,6 +13,7 @@ import PhotoTable from './components/PhotoTable.vue'
 import PhotoViewer from './components/PhotoViewer.vue'
 import StatePlaceholder from './components/StatePlaceholder.vue'
 import ToastHost from './components/ToastHost.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 import AppIcon from './components/AppIcon.vue'
 
 import { usePhotoStore } from '@/stores/usePhotoStore'
@@ -90,6 +91,7 @@ watch(
       </div>
 
       <div class="app__header-right">
+        <ThemeToggle />
         <span class="badge" :class="sourceClass" :title="`数据源：${runtimeConfig.dataSource}`">
           <i class="badge__dot" />
           {{ sourceLabel }}
@@ -277,7 +279,7 @@ watch(
 
 .skeleton__media {
   aspect-ratio: 3 / 2;
-  background: linear-gradient(90deg, #eef0f4 25%, #f7f8fa 37%, #eef0f4 63%);
+  background: linear-gradient(90deg, var(--skeleton-a) 25%, var(--skeleton-b) 37%, var(--skeleton-a) 63%);
   background-size: 840px 100%;
   animation: shimmer 1.3s ease-in-out infinite;
 }
@@ -286,7 +288,7 @@ watch(
   height: 10px;
   margin: 10px 12px 0;
   border-radius: 5px;
-  background: linear-gradient(90deg, #eef0f4 25%, #f7f8fa 37%, #eef0f4 63%);
+  background: linear-gradient(90deg, var(--skeleton-a) 25%, var(--skeleton-b) 37%, var(--skeleton-a) 63%);
   background-size: 840px 100%;
   animation: shimmer 1.3s ease-in-out infinite;
 }

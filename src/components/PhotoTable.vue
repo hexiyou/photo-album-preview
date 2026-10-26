@@ -215,7 +215,7 @@ tbody tr {
 }
 
 tbody tr:nth-child(even) {
-  background: #fcfdfe;
+  background: var(--row-alt);
 }
 
 tbody tr:hover {

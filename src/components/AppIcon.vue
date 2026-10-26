@@ -42,6 +42,9 @@ const PATHS = {
   user: '<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
   pin: '<path d="M12 21.5s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10.5" r="2.6"/>',
   sortAsc: '<path d="M7 9.5 4 6l-3 3.5"/><path d="M4 6v14"/><path d="M11 6h10"/><path d="M11 12h7"/><path d="M11 18h4"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2"/><path d="M12 19.5v2"/><path d="m5.2 5.2 1.4 1.4"/><path d="m17.4 17.4 1.4 1.4"/><path d="M2.5 12h2"/><path d="M19.5 12h2"/><path d="m5.2 18.8 1.4-1.4"/><path d="m17.4 6.6 1.4-1.4"/>',
+  moon: '<path d="M20.8 13.2A8.5 8.5 0 1 1 10.8 3.2a7 7 0 0 0 10 10Z"/>',
+  monitor: '<rect x="2.5" y="4" width="19" height="12.5" rx="2.2"/><path d="M8.5 20.5h7"/><path d="M12 16.5v4"/>',
   spinner: '<circle cx="12" cy="12" r="8.5" opacity="0.25"/><path d="M20.5 12a8.5 8.5 0 0 0-8.5-8.5"/>'
 }
 

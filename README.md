@@ -17,6 +17,7 @@
 | 元信息面板 | 文件信息、拍摄参数（相机 / 镜头 / 焦距 / 光圈 / ISO）、组织信息（相册 / 上传者 / 地点 / 标签） |
 | 缩略图导航条 | 查看器底部胶片条，当前项高亮并自动居中滚动 |
 | URL 直达 | `?view=table` 指定视图，`?photo=ph_0003` 直接打开某张照片，状态回写到地址栏可分享 |
+| 明 / 暗主题 | 右上角一键切换，偏好写入 `localStorage` 持久化，刷新自动恢复；未手动选择过时跟随系统偏好 |
 
 **键盘快捷键（查看器内）**
 
@@ -50,6 +51,14 @@ npm run build     # 生产构建，输出到 dist/
 npm run preview   # 预览构建产物
 npm run mock:api  # 启动本地 Mock 后端（端口 8787），用于验证真实 HTTP 链路
 ```
+
+### 主题（明 / 暗）
+
+- 点击右上角主题按钮在明暗之间切换，偏好存入 `localStorage`（键名 `photo-album:theme`，取值 `light` / `dark`），下次打开自动应用。
+- 从未手动切换过时**跟随系统**（`prefers-color-scheme`），且系统主题变化时页面实时跟随；一旦手动选择过，就以用户选择为准。
+- 主题只影响 `src/styles/global.css` 里的设计令牌（`[data-theme='dark']` 覆盖一组 CSS 变量），组件样式**不写死颜色**，因此新增组件默认支持双主题。
+- 首屏无闪烁：`index.html` 里的内联脚本在样式生效前就给 `<html>` 打上 `data-theme`。
+- 需要新增可调色的元素时，请先复用现有令牌；确有必要再加新变量时，**明暗两套一起加**。
 
 ### 演示数据说明
 
@@ -124,6 +133,7 @@ photo-album-preview/
     ├── stores/usePhotoStore.js # 全局状态（列表 / 查询 / 查看器 / 多选）
     ├── composables/
     │   ├── usePhotoActions.js  # ★ 操作注册表（下载 / 上传 / 重命名 / 删除）
+    │   ├── useTheme.js         # ★ 明暗主题（读取/写入 localStorage，跟随系统）
     │   └── useToast.js
     ├── utils/
     │   ├── download.js         # 下载（进度、降级、文件名清洗）
@@ -134,7 +144,7 @@ photo-album-preview/
     │   ├── PhotoGrid.vue + PhotoCard.vue
     │   ├── PhotoTable.vue      # 详细记录模式
     │   ├── PhotoViewer.vue     # 大图查看器
-    │   ├── PaginationBar.vue / StatePlaceholder.vue / ToastHost.vue / AppIcon.vue
+    │   ├── PaginationBar.vue / StatePlaceholder.vue / ThemeToggle.vue / ToastHost.vue / AppIcon.vue
     │   └── styles/global.css
 ```
 
@@ -218,6 +228,7 @@ http://127.0.0.1:5173/?feat.upload=1&feat.delete=1&feat.selection=1
 | 换 UI 组件库（Element Plus 等） | 只影响 `src/components/**`，store / api / model 三层无需改动 |
 | 换成 Pinia / 服务端状态管理 | 替换 `src/stores/usePhotoStore.js`，导出同名 API 即可 |
 | 服务端下发配置（不再用 .env） | 改 `src/env.js` 一处即可 |
+| 加第三种主题（如「护眼」「高对比」） | 在 `styles/global.css` 增一组 `[data-theme='xxx']` 令牌，再在 `useTheme.js` 的取值里加一个选项 |
 
 ---
 
