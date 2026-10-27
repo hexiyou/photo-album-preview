@@ -113,7 +113,27 @@ export const photoApi = {
     return activeSource.updateMeta(id, patch, options)
   },
 
-  // ---- 扫描进度 SSE（P2）：环境不支持返回 null，调用方自行退回轮询 ----
+  // ---- 回收站（P4）：列表与还原 ----
+  /**
+   * 后端没实现回收站时返回 null（而不是抛错），调用方据此隐藏入口。
+   * @returns {Promise<{list: object[], dir: string}|null>}
+   */
+  async listTrash(options = {}) {
+    if (typeof activeSource.listTrash !== 'function') return null
+    try {
+      return await activeSource.listTrash(options)
+    } catch (error) {
+      if (options.throwOnError) throw error
+      return null
+    }
+  },
+
+  restoreFromTrash(ids, options = {}) {
+    if (typeof activeSource.restoreFromTrash !== 'function') {
+      return Promise.reject(new Error('当前数据源不支持回收站还原'))
+    }
+    return activeSource.restoreFromTrash(ids, options)
+  },
   openScanStream(handlers = {}) {
     if (typeof activeSource.openScanStream !== 'function') return null
     return activeSource.openScanStream(handlers)

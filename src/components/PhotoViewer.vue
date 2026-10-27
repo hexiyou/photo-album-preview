@@ -300,10 +300,10 @@ function preloadNeighbors() {
   neighbors.forEach((offset) => {
     const target = props.photos[(props.index + offset + props.photos.length) % props.photos.length]
     // 视频一律不预加载：列表只显示 poster，<video> 在真正打开时才创建
-    if (!target || target.isVideo || !target.urls?.regular) return
+    if (!target || target.isVideo || !target.displayUrl) return
     const img = new Image()
     img.decoding = 'async'
-    img.src = target.urls.regular
+    img.src = target.displayUrl
   })
 }
 
@@ -329,9 +329,10 @@ function onImageError() {
 }
 
 function retryImage() {
-  if (!photo.value?.urls?.full) return
+  if (!photo.value?.displayUrl) return
   imageState.value = 'loading'
-  const src = photo.value.urls.full
+  // 优先转码后的可预览版本（HEIC），没有才是原图
+  const src = photo.value.displayUrl
   const img = new Image()
   img.onload = () => {
     natural.width = img.naturalWidth
@@ -724,11 +725,11 @@ const metaGroups = computed(() => {
 
             <template v-else>
               <img
-                v-if="photo.urls.full || photo.urls.regular"
+                v-if="photo.displayUrl"
                 v-show="imageState === 'loaded'"
                 ref="imageEl"
                 class="stage__img"
-                :src="photo.urls.full || photo.urls.regular"
+                :src="photo.displayUrl"
                 :alt="photo.displayName"
                 :style="imageStyle"
                 draggable="false"

@@ -166,6 +166,33 @@ export const httpSource = {
   },
 
   /**
+   * 回收站列表（契约 §5.15）
+   * 后端没实现时返回 404，调用方据此隐藏入口，不抛错。
+   * @returns {Promise<{list: object[], dir: string}>}
+   */
+  async listTrash(options = {}) {
+    const data = await request('/trash', { signal: options.signal })
+    return { list: data?.list ?? [], dir: data?.dir || '' }
+  },
+
+  /**
+   * 从回收站还原到原位置（契约 §5.15）
+   * @param {string[]} ids 删除前的 id；还原成功后 id 会回到原值
+   * @returns {Promise<{restored: number, failed: object[]}>}
+   */
+  async restoreFromTrash(ids = [], options = {}) {
+    const targets = (Array.isArray(ids) ? ids : [ids]).filter(Boolean)
+    if (!targets.length) throw new ApiError('请先选择要还原的文件', { code: 400 })
+
+    const data = await request('/trash/restore', {
+      method: 'POST',
+      body: { ids: targets },
+      signal: options.signal
+    })
+    return { restored: Number(data?.restored ?? 0), failed: data?.failed ?? [] }
+  },
+
+  /**
    * 删除（默认进回收站；permanent=true 才彻底删除）
    * @param {string|string[]} ids
    * @param {{permanent?:boolean, signal?:AbortSignal}} options

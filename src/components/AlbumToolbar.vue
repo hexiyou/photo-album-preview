@@ -3,8 +3,10 @@
  * 相册工具栏：搜索 / 筛选 / 排序 / 视图切换 / 刷新
  * 所有二次操作（上传等）从 features 开关读取，开关打开后自动出现。
  */
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AppIcon from './AppIcon.vue'
+import PromptDialog from './PromptDialog.vue'
+import TrashDialog from './TrashDialog.vue'
 import features from '@/config/album.config'
 import { activeSourceName, photoApi } from '@/api/photoApi'
 import { usePhotoStore } from '@/stores/usePhotoStore'
@@ -13,7 +15,6 @@ import { useToast } from '@/composables/useToast'
 import { createPhotoActions } from '@/composables/usePhotoActions'
 import { useDialog } from '@/composables/useDialog'
 import { hoverPreviewEnabled, setHoverPreviewEnabled } from '@/composables/useHoverPreview'
-import PromptDialog from './PromptDialog.vue'
 
 const { state, setQuery, setViewMode, refresh, prependMedias, removeMedias, selectedPhotos } = usePhotoStore()
 const toast = useToast()
@@ -297,6 +298,22 @@ async function runDeleteSelected() {
   if (!deleteSelectedAction.value) return
   await deleteSelectedAction.value.run()
 }
+
+// ---------------------------------------------------------------------------
+// 回收站（P4，契约见 API.md §5.15）
+// 后端没实现时 listTrash 返回 null，入口直接不显示 —— 不打扰纯浏览场景
+// ---------------------------------------------------------------------------
+const trashOpen = ref(false)
+const trashSupported = ref(false)
+
+onMounted(async () => {
+  const probe = await photoApi.listTrash()
+  trashSupported.value = probe !== null
+})
+
+async function handleRestored() {
+  await refresh()
+}
 </script>
 
 <template>
@@ -448,6 +465,16 @@ async function runDeleteSelected() {
         {{ scanText }}
       </button>
 
+      <button
+        v-if="trashSupported"
+        type="button"
+        class="btn btn--icon"
+        title="回收站：找回已删除的文件"
+        @click="trashOpen = true"
+      >
+        <AppIcon name="trash" :size="16" />
+      </button>
+
       <button type="button" class="btn btn--icon" title="刷新" :disabled="state.loading" @click="refresh()">
         <AppIcon name="refresh" :size="16" :class="{ 'is-spinning': state.loading }" />
       </button>
@@ -462,6 +489,8 @@ async function runDeleteSelected() {
       @confirm="onConfirm"
       @cancel="onCancel"
     />
+
+    <TrashDialog v-model:open="trashOpen" @restored="handleRestored" />
 
     <TransitionGroup name="chip">
       <div v-if="activeFilters.length" key="chips" class="toolbar__chips">

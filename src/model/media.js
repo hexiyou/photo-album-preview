@@ -195,7 +195,13 @@ export function adaptMedia(raw = {}) {
   const urlsSource = { ...(raw.urls || raw.url || {}), ...raw }
   const thumbUrl = normalizeUrl(pick(urlsSource, ['thumbUrl', 'thumbnail', 'thumb']))
   const posterUrl = normalizeUrl(pick(urlsSource, ['posterUrl', 'poster', 'cover', 'coverUrl']))
-  const regularUrl = normalizeUrl(pick(urlsSource, ['regularUrl', 'preview', 'regular']))
+  const regularUrl = normalizeUrl(pick(urlsSource, ['regularUrl', 'regular']))
+  /**
+   * 原图浏览器打不开时的可预览替代（HEIC / HEIF 转码出的 JPEG，契约 §4.5）。
+   * 注意它**不是** regular：regular 是"中等尺寸"，preview 是"换个格式"，
+   * 所以这里单独取，不并进 regular 的别名链。
+   */
+  const previewUrl = normalizeUrl(pick(urlsSource, ['previewUrl', 'preview']))
   const fullUrl = normalizeUrl(pick(urlsSource, ['fullUrl', 'original', 'raw', 'full', 'src', 'url']))
   const downloadUrl = normalizeUrl(pick(urlsSource, ['downloadUrl', 'download']))
   const hasPoster = Boolean(posterUrl || thumbUrl)
@@ -285,6 +291,11 @@ export function adaptMedia(raw = {}) {
       poster: posterUrl || thumbUrl || (isVideo ? '' : regularUrl),
       regular: regularUrl || fullUrl || thumbCandidate,
       full: fullUrl || regularUrl || thumbCandidate,
+      /**
+       * HEIC 之类浏览器不认识的格式，这里是转码后的 JPEG（契约 §4.5）。
+       * full 与 download 仍指向原始文件，所以下载到的还是无损原件。
+       */
+      preview: previewUrl,
       /** 视频播放源；图片为空串，组件用 urls.full 兜底 */
       play: isVideo ? fullUrl || regularUrl || thumbCandidate : '',
       download: downloadUrl || fullUrl || regularUrl || thumbCandidate,
@@ -328,6 +339,13 @@ export function adaptMedia(raw = {}) {
 
   // 播放源：视频用 urls.play，图片用 urls.full
   media.playUrl = isVideo ? media.urls.play || media.urls.full : media.urls.full || media.urls.regular
+
+  /**
+   * 大图查看用的地址：**优先 preview**。
+   * HEIC 这类格式原图浏览器打不开，preview 是后端转码出的 JPEG；
+   * 普通图片 preview 为空，自然回退到原图，组件不需要判断格式。
+   */
+  media.displayUrl = media.urls.preview || media.urls.full || media.urls.regular
 
   // 下载文件名：标题 + 扩展名，保证可读性与合法性
   media.downloadName = ensureExtension(media.title || stripExtension(media.fileName) || media.id, media.extension)
