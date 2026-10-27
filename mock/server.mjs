@@ -19,7 +19,7 @@ import { createServer } from 'node:http'
 import { dirname, extname, join, normalize, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { MOCK_ALBUMS, MOCK_PHOTOS, MOCK_TAGS } from '../src/mock/photos.js'
+import { MOCK_ALBUMS, MOCK_MEDIA, MOCK_TAGS } from '../src/mock/photos.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PUBLIC_DIR = resolve(__dirname, '..', 'public')
@@ -32,6 +32,7 @@ const MIME_TYPES = {
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.webp': 'image/webp',
+  '.mp4': 'video/mp4',
   '.json': 'application/json; charset=utf-8'
 }
 
@@ -95,10 +96,14 @@ function sendFile(res, filePath, { attachment = false, downloadName = '' } = {})
   })
 }
 
-function applyQuery({ keyword = '', albumId = '', tag = '', sort = 'takenAt', order = 'desc', dateFrom = '', dateTo = '' }) {
+function applyQuery({ keyword = '', albumId = '', tag = '', kind = 'all', sort = 'takenAt', order = 'desc', dateFrom = '', dateTo = '' }) {
   const text = String(keyword).trim().toLowerCase()
 
-  let list = MOCK_PHOTOS.filter((photo) => {
+  let list = MOCK_MEDIA.filter((photo) => {
+    if (kind && kind !== 'all') {
+      const isVideo = String(photo.kind || '').toLowerCase() === 'video' || String(photo.mimeType || '').startsWith('video/')
+      if (kind === 'video' ? !isVideo : isVideo) return false
+    }
     if (albumId && photo.album?.id !== albumId) return false
     if (tag && !photo.tags.includes(tag)) return false
 
@@ -173,6 +178,7 @@ async function handleApi(req, res, url) {
       keyword: query.get('keyword') || '',
       albumId: query.get('albumId') || '',
       tag: query.get('tag') || '',
+      kind: query.get('kind') || 'all',
       sort: query.get('sort') || 'takenAt',
       order: query.get('order') || 'desc',
       dateFrom: query.get('dateFrom') || '',
@@ -196,7 +202,7 @@ async function handleApi(req, res, url) {
     const ids = String(query.get('ids') || '').split(',').map((s) => s.trim()).filter(Boolean)
     const set = new Set(ids)
     sendJson(res, 200, success({
-      list: MOCK_PHOTOS.filter((photo) => set.has(photo.id)).map(toResponsePhoto)
+      list: MOCK_MEDIA.filter((photo) => set.has(photo.id)).map(toResponsePhoto)
     }))
     return
   }
@@ -216,22 +222,23 @@ async function handleApi(req, res, url) {
   // GET /api/photos/:id/download
   const downloadMatch = /^\/api\/photos\/([^/]+)\/download$/.exec(pathname)
   if (downloadMatch) {
-    const photo = MOCK_PHOTOS.find((item) => item.id === decodeURIComponent(downloadMatch[1]))
+    const photo = MOCK_MEDIA.find((item) => item.id === decodeURIComponent(downloadMatch[1]))
     if (!photo) {
-      sendJson(res, 404, failure(40404, '照片不存在', 404).body)
+      sendJson(res, 404, failure(40404, '文件不存在', 404).body)
       return
     }
     const filePath = join(PUBLIC_DIR, normalize(photo.urls.full.replace(/^\/+/, '')))
-    sendFile(res, filePath, { attachment: true, downloadName: `${photo.title}.svg` })
+    const ext = String(photo.mimeType || '').startsWith('video/') ? 'mp4' : 'svg'
+    sendFile(res, filePath, { attachment: true, downloadName: `${photo.title}.${ext}` })
     return
   }
 
   // GET /api/photos/:id
   const detailMatch = /^\/api\/photos\/([^/]+)$/.exec(pathname)
   if (detailMatch) {
-    const photo = MOCK_PHOTOS.find((item) => item.id === decodeURIComponent(detailMatch[1]))
+    const photo = MOCK_MEDIA.find((item) => item.id === decodeURIComponent(detailMatch[1]))
     if (!photo) {
-      sendJson(res, 404, failure(40404, '照片不存在', 404).body)
+      sendJson(res, 404, failure(40404, '媒体不存在', 404).body)
       return
     }
     sendJson(res, 200, success({ photo: toResponsePhoto(photo) }))

@@ -9,7 +9,10 @@
     "build": "vite build",
     "preview": "vite preview --port 4173",
     "mock:api": "node mock/server.mjs",
-    "gen:mock": "node scripts/gen-mock-images.mjs"
+    "media:serve": "node media/server.mjs",
+    "scan": "node tools/media-toolkit/scan.mjs",
+    "gen:mock": "node scripts/gen-mock-images.mjs && node scripts/gen-mock-videos.mjs",
+    "media:meta": "node tools/media-toolkit/meta.mjs"
   },
   "dependencies": {
     "vue": "^3.5.44"
