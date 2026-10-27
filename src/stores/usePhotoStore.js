@@ -190,6 +190,70 @@ function applyMediaUpdate(media) {
   return media
 }
 
+/**
+ * 重命名后的替换（API.md §5.12）
+ * 后端 id 由文件路径派生，**改文件名 = 换 id**，所以不能按新 id 去找旧记录，
+ * 必须用 previousId 定位，并顺手把选中态一起迁过去。
+ */
+function replaceMedia(previousId, media) {
+  if (!media?.id) return null
+
+  const index = previousId
+    ? state.photos.findIndex((item) => item.id === previousId)
+    : state.photos.findIndex((item) => item.id === media.id)
+
+  if (index >= 0) state.photos.splice(index, 1, media)
+
+  const selectedIndex = state.selectedIds.indexOf(previousId)
+  if (selectedIndex >= 0) state.selectedIds.splice(selectedIndex, 1, media.id)
+
+  return media
+}
+
+/** 删除后从当前列表移除，并同步选中态、总数与查看器指针 */
+function removeMedias(ids = []) {
+  const removed = new Set((Array.isArray(ids) ? ids : [ids]).filter(Boolean))
+  if (!removed.size) return 0
+
+  const viewingId = state.viewer.open ? state.photos[state.viewer.index]?.id : null
+  const before = state.photos.length
+
+  state.photos = state.photos.filter((item) => !removed.has(item.id))
+  const removedCount = before - state.photos.length
+
+  state.selectedIds = state.selectedIds.filter((id) => !removed.has(id))
+  if (removedCount) state.pagination.total = Math.max(0, (state.pagination.total || 0) - removedCount)
+
+  if (state.viewer.open) {
+    if (!viewingId || removed.has(viewingId)) {
+      closeViewer()
+    } else {
+      const next = state.photos.findIndex((item) => item.id === viewingId)
+      state.viewer.index = next >= 0 ? next : 0
+    }
+  }
+
+  return removedCount
+}
+
+/**
+ * 上传完成后把新记录插到当前页头部。
+ * 只在第一页这么做 —— 在其他页插入会让人以为文件"跑到这一页来了"，
+ * 那种情况返回 0，由调用方整页刷新。
+ */
+function prependMedias(list = []) {
+  const items = (Array.isArray(list) ? list : [list]).filter((item) => item?.id)
+  const existing = new Set(state.photos.map((item) => item.id))
+  const fresh = items.filter((item) => !existing.has(item.id))
+  if (!fresh.length || (state.pagination.page || 1) > 1) return 0
+
+  state.photos = [...fresh, ...state.photos]
+  const limit = state.pagination.pageSize || 20
+  if (state.photos.length > limit) state.photos = state.photos.slice(0, limit)
+  state.pagination.total = (state.pagination.total || 0) + fresh.length
+  return fresh.length
+}
+
 // ---------------------------------------------------------------------------
 // getter
 // ---------------------------------------------------------------------------
@@ -226,7 +290,10 @@ export function usePhotoStore() {
     stepViewer,
     toggleSelect,
     clearSelection,
-    applyMediaUpdate
+    applyMediaUpdate,
+    replaceMedia,
+    removeMedias,
+    prependMedias
   }
 }
 

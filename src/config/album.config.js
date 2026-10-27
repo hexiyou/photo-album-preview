@@ -26,12 +26,19 @@ const DEFAULT_FEATURES = {
   favorite: false,
   /** 分享链接 */
   share: false,
-  /** 上传（后端 POST /api/photos 就绪后开启） */
-  upload: false,
-  /** 重命名（后端 PATCH /api/photos/{id} 就绪后开启） */
-  rename: false,
-  /** 删除（后端 DELETE /api/photos/{id} 就绪后开启） */
-  delete: false,
+  /**
+   * 上传（契约见 API.md §5.11）
+   * 默认开：按钮始终可用，后端没实现时会明确报错，而不是藏起来让人以为不支持
+   */
+  upload: true,
+  /**
+   * 重命名（契约见 API.md §5.12）
+   * 这里是"前端是否有这个能力"的总闸；真正显示与否还要看该条数据的
+   * permissions.canEdit —— 后端不给权限就不显示入口（见 §4.10）
+   */
+  rename: true,
+  /** 删除（契约见 API.md §5.13 / §5.14），门控同 rename，看 permissions.canDelete */
+  delete: true,
   /** 相册 / 标签筛选 */
   filter: true,
   /** 类型筛选（全部 / 图片 / 视频） */

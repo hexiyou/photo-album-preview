@@ -11,6 +11,7 @@
 
 import request from '@/api/http'
 import { ApiError } from '@/api/http'
+import { runtimeConfig } from '@/env'
 import { adaptMedia, adaptMediaList, filterByKind } from '@/model/media'
 
 function normalizePagination(data = {}, fallback = {}) {
@@ -105,18 +106,110 @@ export const httpSource = {
   },
 
   // -------------------------------------------------------------------------
-  // 管理类接口（本期不启用，先把调用形态定义好）
+  // 管理类接口（P3：上传 / 重命名 / 删除，契约见 API.md §5.11–§5.14）
+  // 后端未实现时返回 404 / 403，由调用方提示并回滚列表，不会静默失败。
   // -------------------------------------------------------------------------
-  async uploadPhotos() {
-    throw new ApiError('上传接口尚未实现', { code: 501 })
+
+  /**
+   * 上传文件（multipart/form-data）
+   * @param {File[]|FileList} files
+   * @param {{albumId?:string, directory?:string, signal?:AbortSignal, timeout?:number}} options
+   * @returns {Promise<{list: object[], failed: object[]}>}
+   */
+  async uploadPhotos(files = [], options = {}) {
+    const picked = Array.from(files || []).filter(Boolean)
+    if (!picked.length) throw new ApiError('请先选择要上传的文件', { code: 400 })
+
+    const form = new FormData()
+    picked.forEach((file) => form.append('files', file, file.name))
+    if (options.albumId) form.append('albumId', String(options.albumId))
+    if (options.directory) form.append('directory', String(options.directory))
+
+    const data = await request('/media/upload', {
+      method: 'POST',
+      body: form,
+      // 走独立的宽松超时，避免大文件被普通请求超时打断
+      timeout: options.timeout ?? runtimeConfig.uploadTimeout,
+      signal: options.signal
+    })
+
+    return {
+      list: adaptMediaList(data?.list ?? []),
+      failed: Array.isArray(data?.failed) ? data.failed : []
+    }
   },
 
-  async renamePhoto() {
-    throw new ApiError('重命名接口尚未实现', { code: 501 })
+  /**
+   * 重命名（改磁盘文件名）
+   * 注意：后端 id 由路径派生，改名后 id 会变，所以返回值里同时带新 id 与旧 id，
+   * 调用方要用返回的 media 就地替换列表项，而不是刷新整页。
+   * @returns {Promise<{id:string, previousId:string, fileName:string, media:object}>}
+   */
+  async renamePhoto(id, fileName, options = {}) {
+    if (!id) throw new ApiError('缺少媒体 ID', { code: 400 })
+    const name = String(fileName ?? '').trim()
+    if (!name) throw new ApiError('文件名不能为空', { code: 400 })
+
+    const data = await request(`/media/${encodeURIComponent(id)}/rename`, {
+      method: 'POST',
+      body: { fileName: name },
+      signal: options.signal
+    })
+
+    const media = adaptMedia(data?.media ?? data)
+    return {
+      id: data?.id || media?.id || id,
+      previousId: data?.previousId || id,
+      fileName: data?.fileName || name,
+      media
+    }
   },
 
-  async deletePhotos() {
-    throw new ApiError('删除接口尚未实现', { code: 501 })
+  /**
+   * 删除（默认进回收站；permanent=true 才彻底删除）
+   * @param {string|string[]} ids
+   * @param {{permanent?:boolean, signal?:AbortSignal}} options
+   * @returns {Promise<{deleted:number, permanent:boolean, failed:object[]}>}
+   */
+  async deletePhotos(ids = [], options = {}) {
+    const targets = (Array.isArray(ids) ? ids : [ids]).filter(Boolean)
+    if (!targets.length) throw new ApiError('请先选择要删除的文件', { code: 400 })
+
+    const permanent = Boolean(options.permanent)
+
+    try {
+      const data = await request('/media/batch-delete', {
+        method: 'POST',
+        body: { ids: targets, permanent },
+        signal: options.signal
+      })
+      return {
+        deleted: Number(data?.deleted ?? targets.length),
+        permanent,
+        failed: Array.isArray(data?.failed) ? data.failed : []
+      }
+    } catch (error) {
+      // 契约里 batch-delete 是可选接口，没实现（404）时退回逐个单删
+      if (Number(error?.status) !== 404) throw error
+
+      const failed = []
+      let deleted = 0
+      for (const target of targets) {
+        try {
+          await request(`/media/${encodeURIComponent(target)}`, {
+            method: 'DELETE',
+            query: permanent ? { permanent: 'true' } : {},
+            signal: options.signal
+          })
+          deleted += 1
+        } catch (deleteError) {
+          failed.push({ id: target, code: deleteError?.code ?? -1, message: deleteError?.message || '删除失败' })
+        }
+      }
+
+      if (!deleted && failed.length) throw new ApiError(failed[0].message, { code: failed[0].code })
+      return { deleted, permanent, failed }
+    }
   }
 }
 

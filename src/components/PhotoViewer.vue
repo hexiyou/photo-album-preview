@@ -19,6 +19,10 @@ import VideoPlayer from './VideoPlayer.vue'
 import features from '@/config/album.config'
 import { activeSourceName, photoApi } from '@/api/photoApi'
 import { useToast } from '@/composables/useToast'
+import { createPhotoActions } from '@/composables/usePhotoActions'
+import { useDialog } from '@/composables/useDialog'
+import PromptDialog from './PromptDialog.vue'
+import { usePhotoStore } from '@/stores/usePhotoStore'
 import { downloadPhoto } from '@/utils/download'
 import { formatBytes, formatDate, formatDuration, formatFNumber } from '@/utils/format'
 import {
@@ -123,6 +127,49 @@ async function saveMeta() {
 
 /** 播放器实例，视频模式下由它接管键盘 */
 const playerRef = ref(null)
+
+// ---------------------------------------------------------------------------
+// 文件管理：重命名 / 删除（P3，契约见 API.md §5.12 / §5.13）
+// 入口是否出现取决于后端返回的 permissions，后端不给权限就一个都不显示。
+// ---------------------------------------------------------------------------
+const { replaceMedia, removeMedias } = usePhotoStore()
+const { open: dialogOpen, dialogProps, confirm, prompt, onConfirm, onCancel } = useDialog()
+
+/** 重命名后 id 会变：先替换列表里的记录，再把查看器指针挪到新 id 上 */
+function handleRenamed(previousId, media) {
+  replaceMedia(previousId, media)
+  if (!media?.id) return
+  const next = props.photos.findIndex((item) => item.id === media.id)
+  if (next >= 0 && next !== props.index) emit('update:index', next)
+}
+
+function handleDeleted() {
+  // 删的是当前这一条时，store 会顺手关掉查看器
+  removeMedias([photo.value?.id])
+}
+
+const manageActions = computed(() =>
+  createPhotoActions({
+    photo: photo.value,
+    toast,
+    confirm,
+    prompt,
+    onRenamed: handleRenamed,
+    onDeleted: handleDeleted
+  })
+)
+
+const renameAction = computed(() => manageActions.value.find((action) => action.id === 'rename') ?? null)
+const deleteAction = computed(() => manageActions.value.find((action) => action.id === 'delete') ?? null)
+const canManage = computed(() => !!renameAction.value || !!deleteAction.value)
+
+async function runRename() {
+  await renameAction.value?.run()
+}
+
+async function runDelete() {
+  await deleteAction.value?.run()
+}
 
 /**
  * 播放器拿到真实时长后回写到媒体对象上。
@@ -784,6 +831,24 @@ const metaGroups = computed(() => {
                   </div>
                 </template>
               </div>
+
+              <!-- 文件管理：重命名 / 删除（契约 §5.12 / §5.13）
+                   入口由后端 permissions 门控，没权限时整个区块不出现 -->
+              <div v-if="canManage" class="panel__group panel__group--edit">
+                <h4 class="panel__title">
+                  文件
+                  <span class="panel__hint">写入磁盘</span>
+                </h4>
+
+                <div class="edit__actions">
+                  <button v-if="renameAction" type="button" class="btn btn--sm" title="修改磁盘上的文件名" @click="runRename">
+                    重命名
+                  </button>
+                  <button v-if="deleteAction" type="button" class="btn btn--sm btn--danger" title="移入回收站" @click="runDelete">
+                    删除
+                  </button>
+                </div>
+              </div>
             </aside>
           </Transition>
         </div>
@@ -866,6 +931,8 @@ const metaGroups = computed(() => {
         </footer>
       </div>
     </Transition>
+
+    <PromptDialog v-model:open="dialogOpen" v-bind="dialogProps" @confirm="onConfirm" @cancel="onCancel" />
   </Teleport>
 </template>
 

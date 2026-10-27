@@ -30,6 +30,12 @@ export const runtimeConfig = {
   /** 请求超时（毫秒） */
   requestTimeout: toNumber(env.VITE_REQUEST_TIMEOUT, 15000),
 
+  /**
+   * 上传超时（毫秒）
+   * 大文件上传不该被普通请求的 15s 超时打断，因此单独放宽。
+   */
+  uploadTimeout: toNumber(env.VITE_UPLOAD_TIMEOUT, 120000),
+
   /** mock 模式下模拟的网络延迟（毫秒） */
   mockDelay: toNumber(env.VITE_MOCK_DELAY, 320),
 

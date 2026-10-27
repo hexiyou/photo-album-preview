@@ -58,17 +58,19 @@ export async function request(path, options = {}) {
   }
 
   const url = buildUrl(path, query)
+  // FormData 必须让浏览器自己补 Content-Type（要带 boundary），手动设置会导致后端解析不出文件
+  const isFormBody = typeof FormData !== 'undefined' && body instanceof FormData
 
   try {
     const response = await fetch(url, {
       method,
       headers: {
         Accept: 'application/json',
-        ...(body ? { 'Content-Type': 'application/json' } : {}),
+        ...(body && !isFormBody ? { 'Content-Type': 'application/json' } : {}),
         ...(runtimeConfig.apiToken ? { Authorization: `Bearer ${runtimeConfig.apiToken}` } : {}),
         ...headers
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: body ? (isFormBody ? body : JSON.stringify(body)) : undefined,
       credentials: 'same-origin',
       signal: controller.signal
     })

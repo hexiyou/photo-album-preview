@@ -10,9 +10,12 @@ import { activeSourceName, photoApi } from '@/api/photoApi'
 import { usePhotoStore } from '@/stores/usePhotoStore'
 import { downloadPhotos } from '@/utils/download'
 import { useToast } from '@/composables/useToast'
+import { createPhotoActions } from '@/composables/usePhotoActions'
+import { useDialog } from '@/composables/useDialog'
 import { hoverPreviewEnabled, setHoverPreviewEnabled } from '@/composables/useHoverPreview'
+import PromptDialog from './PromptDialog.vue'
 
-const { state, setQuery, setViewMode, refresh } = usePhotoStore()
+const { state, setQuery, setViewMode, refresh, prependMedias, removeMedias, selectedPhotos } = usePhotoStore()
 const toast = useToast()
 
 const keyword = ref(state.query.keyword)
@@ -214,6 +217,86 @@ async function handleDownloadPage() {
     batchDownloading.value = false
   }
 }
+
+// ---------------------------------------------------------------------------
+// 上传（P3，契约见 API.md §5.11）
+// ---------------------------------------------------------------------------
+const fileInput = ref(null)
+const uploading = ref(false)
+
+/** 用 Promise 包一层文件选择器，让动作注册表可以 await 到结果 */
+function pickFiles({ multiple = true } = {}) {
+  return new Promise((resolve) => {
+    const input = fileInput.value
+    if (!input) return resolve(null)
+
+    let settled = false
+    const done = (files) => {
+      if (settled) return
+      settled = true
+      resolve(files)
+    }
+
+    input.multiple = multiple
+    // 先清空，否则连续选同一个文件不会再触发 change
+    input.value = ''
+    input.onchange = () => done(Array.from(input.files || []))
+    // 用户点了取消：现代浏览器会派发 cancel 事件
+    input.oncancel = () => done(null)
+
+    input.click()
+  })
+}
+
+/** 上传完成：第一页就地插入，其他页整页刷新（避免"新文件跑到这一页"的错觉） */
+async function handleUploaded(list) {
+  if (!prependMedias(list)) await refresh()
+}
+
+const uploadAction = computed(
+  () => createPhotoActions({ toast, pickFiles, onUploaded: handleUploaded }).find((action) => action.id === 'upload') ?? null
+)
+
+async function runUpload() {
+  if (!uploadAction.value) return
+  uploading.value = true
+  try {
+    await uploadAction.value.run()
+  } finally {
+    uploading.value = false
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 批量删除（P3，契约见 API.md §5.14）
+// 入口只在开启多选且有选中项时出现（?feat.selection=1）
+// ---------------------------------------------------------------------------
+const { open: dialogOpen, dialogProps, confirm, onConfirm, onCancel } = useDialog()
+
+/** 删除成功后把记录从列表里摘掉，避免再刷新一次 */
+function handleDeleted(ids) {
+  removeMedias(ids)
+}
+
+const deleteSelectedAction = computed(
+  () =>
+    createPhotoActions({
+      photos: selectedPhotos.value,
+      selectedOnly: true,
+      toast,
+      confirm,
+      onDeleted: handleDeleted
+    }).find((action) => action.id === 'delete') ?? null
+)
+
+const canDeleteSelected = computed(
+  () => features.selection && features.delete && selectedPhotos.value.length > 0 && !!deleteSelectedAction.value
+)
+
+async function runDeleteSelected() {
+  if (!deleteSelectedAction.value) return
+  await deleteSelectedAction.value.run()
+}
 </script>
 
 <template>
@@ -293,6 +376,22 @@ async function handleDownloadPage() {
     </div>
 
     <div class="toolbar__right">
+      <button v-if="uploadAction" type="button" class="btn btn--sm" :disabled="uploading" title="上传图片或视频到服务端" @click="runUpload">
+        <AppIcon :name="uploading ? 'spinner' : 'upload'" :size="15" :class="{ 'is-spinning': uploading }" />
+        {{ uploading ? '上传中…' : '上传' }}
+      </button>
+
+      <button
+        v-if="canDeleteSelected"
+        type="button"
+        class="btn btn--sm btn--danger"
+        title="把选中的文件移入回收站"
+        @click="runDeleteSelected"
+      >
+        <AppIcon name="trash" :size="15" />
+        删除 {{ selectedPhotos.length }} 个
+      </button>
+
       <button v-if="features.batchDownload" type="button" class="btn btn--sm" :disabled="!state.photos.length || batchDownloading" @click="handleDownloadPage">
         <AppIcon name="download" :size="15" />
         下载本页
@@ -354,6 +453,16 @@ async function handleDownloadPage() {
       </button>
     </div>
 
+    <!-- 上传用的文件选择器：藏起来由按钮代理点击，避免原生控件破坏工具栏视觉 -->
+    <input ref="fileInput" type="file" multiple accept="image/*,video/*" class="toolbar__file" />
+
+    <PromptDialog
+      v-model:open="dialogOpen"
+      v-bind="dialogProps"
+      @confirm="onConfirm"
+      @cancel="onCancel"
+    />
+
     <TransitionGroup name="chip">
       <div v-if="activeFilters.length" key="chips" class="toolbar__chips">
         <span class="toolbar__chips-label">筛选：</span>
@@ -392,6 +501,11 @@ async function handleDownloadPage() {
 
 .toolbar__right {
   margin-left: auto;
+}
+
+/* 文件选择器只做代理点击用，不占据布局 */
+.toolbar__file {
+  display: none;
 }
 
 .search {

@@ -14,8 +14,9 @@
 | --- | --- |
 | 基础路径 | 由前端 `VITE_API_BASE_URL` 决定，默认 `/api` |
 | 请求方式 | 列表 / 详情类全部 `GET`，扫描为 `POST` |
-| 编码 | `application/json; charset=utf-8` |
+| 编码 | `application/json; charset=utf-8`；上传接口为 `multipart/form-data` |
 | 鉴权 | 可选。若配置 `VITE_API_TOKEN`，前端发送 `Authorization: Bearer <token>` |
+| 写操作 | 上传 / 重命名 / 删除见 §5.11–§5.14，由 `permissions` 字段决定是否启用（见 §4.10） |
 | 时间格式 | ISO 8601 字符串，建议带时区，如 `2026-09-28T10:00:00+08:00` |
 | 跨域 | 若前后端不同域，需开启 CORS 并允许 `Authorization` 与 `Range` 头 |
 
@@ -55,9 +56,11 @@
 | 0 | 成功 | 200 |
 | 1001 | 参数错误 | 400 |
 | 1003 | 未授权 / Token 失效 | 401 |
-| 1004 | 无访问权限 | 403 |
+| 1004 | 无访问权限（写入被禁用） | 403 |
+| 1005 | 文件不合法（类型不支持 / 体积超限 / 空文件） | 400 或 413 |
 | 40400 | 接口不存在 | 404 |
 | 40404 | 资源不存在（照片已删除等） | 404 |
+| 40900 | 资源冲突（目标文件名已存在） | 409 |
 | 5000 | 服务内部错误 | 500 |
 
 业务侧可自行扩展；前端除 0 以外都按失败处理并原样提示 `message`。
@@ -80,10 +83,10 @@
 | GET | `/scan/status` | 扫描进度（轮询通路） | 可选 |
 | GET | `/scan/stream` | **扫描进度 SSE**（见 5.9） | 可选 |
 | PUT | `/media/{id}/meta` | 写入 sidecar 元数据（见 5.10） | 可选 |
-| POST | `/photos` | 上传 | 预留 |
-| PATCH | `/photos/{id}` | 重命名 / 修改信息（**即元数据写入**，见 5.10） | 预留 |
-| DELETE | `/photos/{id}` | 删除 | 预留 |
-| POST | `/photos/batch-delete` | 批量删除 | 预留 |
+| POST | `/media/upload` 或 `/photos` | 上传文件（multipart，见 5.11） | 可选（见 4.10 权限） |
+| POST | `/media/{id}/rename` | 重命名（改磁盘文件名，见 5.12） | 可选（见 4.10 权限） |
+| DELETE | `/media/{id}` | 删除（默认进回收站，见 5.13） | 可选（见 4.10 权限） |
+| POST | `/media/batch-delete` 或 `/photos/batch-delete` | 批量删除（见 5.14） | 可选（见 4.10 权限） |
 
 > `/media` 与 `/photos` 是**同一接口的两种路径写法**，任选其一实现即可，前端两者都认。
 
@@ -324,11 +327,18 @@
 | --- | --- | --- | --- |
 | `canView` | bool | true | 是否可查看 |
 | `canDownload` | bool | true | 为 `false` 时下载按钮置灰 |
-| `canEdit` | bool | false | 预留：重命名 / 编辑 |
-| `canDelete` | bool | false | 预留：删除 |
+| `canEdit` | bool | false | 为 `true` 时显示「重命名」入口（§5.12） |
+| `canDelete` | bool | false | 为 `true` 时显示「删除」入口（§5.13 / §5.14） |
 | `canShare` | bool | false | 预留：分享 |
 
 > 权限是「管理功能上线」的开关依据：前端按钮的可用性由这些字段决定，**不需要前端单独写死逻辑**。
+>
+> 两个字段都**默认 `false`**，后端必须显式返回 `true` 前端才会显示对应入口。
+> 约定：`canEdit` / `canDelete` 为 `true` 即表示后端实现了 §5.11–§5.14 的对应接口；
+> 否则前端不会发起这些请求。**未实现管理接口的后端保持沉默即可，前端自动隐藏入口。**
+>
+> `album-backend` 用 `ALBUM_ENABLE_WRITE` 统一控制：为 `false` 时权限全部为 `false`，
+> 且对应接口直接返回 `403`（code `1004`）。
 
 ---
 
@@ -609,18 +619,140 @@ Content-Type: application/json
 
 > 命令行等价操作：`npm run media:meta -- --file "D:/素材/travel/IMG_0042.jpg" --title "清晨的海边" --add-tag 夕阳`
 >
-> 若后端提供 `PATCH /photos/{id}`，前端的 `httpSource.updateMeta()` 会优先走它（见 §5.11 预留接口）。
+> 若后端提供 `PATCH /photos/{id}`，前端的 `httpSource.updateMeta()` 会优先走它。
+> 注意它改的是**显示信息**，与改文件名的 §5.12 重命名是两个不同接口。
 
-### 5.11 预留接口（本期不调用）
+### 5.11 POST /media/upload — 上传（multipart）
+
+前端工具栏的「上传」按钮走这里。**唯一不用 JSON 信封的请求体**，因为要带文件：
 
 ```http
-POST   /photos            multipart/form-data: files[], albumId   → 201 { code, data: { list: Media[] } }
-PATCH  /photos/{id}       { "title": "新标题", "description": "", "tags": [] }  → 200 { code, data: { photo: Media } }
-DELETE /photos/{id}       → 200 { code, data: { id } }
-POST   /photos/batch-delete  { "ids": ["ph_0001"] } → 200 { code, data: { deleted: 1 } }
+POST /api/media/upload
+Content-Type: multipart/form-data
+
+files=<二进制，可重复出现多次>
+albumId=al_3f2a1c      （可选：归入相册）
+directory=旅行/2026    （可选：上传根目录下的子目录，会自动创建）
 ```
 
-前端对应实现位置：`src/api/sources/httpSource.js` 中已预留同名方法（当前抛出 `501`）。
+```http
+→ 201 {
+    "code": 0,
+    "message": "success",
+    "traceId": "...",
+    "data": {
+      "list": [ { ...Media }, { ...Media } ],
+      "failed": [
+        { "fileName": "说明.txt", "code": 1005, "message": "不支持的文件类型：.txt" }
+      ]
+    }
+  }
+```
+
+| 规则 | 说明 |
+| --- | --- |
+| 字段名 | `files`（可多份）或 `file`（单份），两者都认 |
+| 部分失败 | **仍返回 201**：成功的进 `list`，失败的进 `failed`。全部失败才返回 `400`（code `1005`） |
+| 重名处理 | 自动追加序号 `IMG_01 (1).jpg`，**绝不覆盖已有文件** |
+| 落盘位置 | 后端配置 `ALBUM_UPLOAD_DIR`（`album-backend` 默认 `data/uploads/`） |
+| 入库时机 | **上传后立即探测元数据、生成缩略图并写入索引**，返回的 Media 可直接渲染，无需再扫描 |
+| 体积上限 | 由后端自行决定；超限放 `failed`，code `1005` |
+
+> 前端实现位置：`src/api/sources/httpSource.js` 的 `uploadPhotos()`。
+> 上传用独立的请求通道（不设 `Content-Type`，由浏览器自动补 `boundary`），
+> 并放宽超时——大文件上传不该被默认的 15s 请求超时打断。
+
+### 5.12 POST /media/{id}/rename — 重命名（改磁盘文件名）
+
+```http
+POST /api/media/md_11ffaa7780/rename
+{ "fileName": "清晨的海边.jpg" }
+```
+
+```http
+→ 200 {
+    "code": 0,
+    "data": {
+      "id": "md_7c1e2a9b33",
+      "previousId": "md_11ffaa7780",
+      "fileName": "清晨的海边.jpg",
+      "media": { ...Media }
+    }
+  }
+```
+
+> **⚠️ 调用方必须处理 id 变化**
+> 后端 id 由文件路径派生（sha1），**改文件名 = 换 id**。所以响应同时给出
+> `id`（新）与 `previousId`（旧），前端用返回的 `media` **就地替换**列表项、
+> 同步选中态与查看器指针，用户不应感知到 id 变了。
+> 只替换不刷新整页，避免滚动位置丢失。
+
+| 规则 | 说明 |
+| --- | --- |
+| 参数 | 只收**纯文件名**，带 `/` `\` 或 `.` `..` 一律 `400`（code `1001`） |
+| 扩展名 | 必须与原件一致；想改类型请重新上传（不一致返回 `400`） |
+| 重名冲突 | 目标已存在 → `409`（code `40900`），**不覆盖** |
+| 随行文件 | sidecar（`<原名>.meta.json`）、缩略图与雪碧图缓存一起迁移 |
+| 与 `PATCH` 的分工 | `PATCH /photos/{id}` 改的是**显示信息**（title / description / tags，写 sidecar，见 §5.10）；本接口改的是**磁盘文件名**。两者互不覆盖 |
+
+### 5.13 DELETE /media/{id} — 删除
+
+```http
+DELETE /api/media/md_11ffaa7780              → 移入回收站（默认，可恢复）
+DELETE /api/media/md_11ffaa7780?permanent=true → 彻底删除（不可恢复）
+```
+
+```http
+→ 200 {
+    "code": 0,
+    "data": {
+      "id": "md_11ffaa7780",
+      "deleted": true,
+      "permanent": false,
+      "trashedPath": "D:/素材/.album-trash/2026-10-28/IMG_0042.jpg"
+    }
+  }
+```
+
+| 规则 | 说明 |
+| --- | --- |
+| 默认行为 | **移入回收站**：文件从原目录搬走，因此**重扫不会复活**；误删可手动找回 |
+| 回收站位置 | `ALBUM_TRASH_DIR`，默认 `<上传/扫描根目录>/.album-trash/<日期>/` |
+| `permanent=true` | 真删文件；`trashedPath` 为 `null` |
+| 索引与缓存 | 索引记录一律移除，缩略图/雪碧图缓存一并清理（可丢弃，重扫会再生） |
+| sidecar | 跟着一起进回收站，元数据不丢 |
+| 不存在 | `404`（code `40404`） |
+
+### 5.14 POST /media/batch-delete — 批量删除
+
+```http
+POST /api/media/batch-delete
+{ "ids": ["md_11ffaa7780", "md_bce5cd7b36"], "permanent": false }
+```
+
+```http
+→ 200 {
+    "code": 0,
+    "data": {
+      "deleted": 2,
+      "permanent": false,
+      "failed": [ { "id": "md_xxx", "code": 40404, "message": "资源不存在" } ]
+    }
+  }
+```
+
+- 语义与 §5.13 完全一致，只是**部分失败仍返回 200**，`deleted` 记成功条数。
+- `ids` 为空 → `400`（code `1001`）。
+- 前端复用既有的多选机制（`state.selectedIds`），走这一个接口而不是循环单删。
+
+### 5.15 未实现这些接口时怎么办
+
+管理接口全部是**可选**的。后端不实现时：
+
+1. 不要返回 `permissions.canEdit` / `canDelete`（或显式给 `false`），前端**自动隐藏入口**，
+   不会发起任何管理类请求——所以不实现也不会报错；
+2. 若前端仍然调了（比如手敲 URL），后端返回 `404` 或 `403` 均可，前端会提示 `message` 并回滚列表；
+3. `album-backend` 的 `ALBUM_ENABLE_WRITE=false` 是总开关：权限字段全 `false`，接口返回 `403`（code `1004`）。
 
 ---
 
@@ -718,8 +850,9 @@ curl -H "Range: bytes=0-1023" -i "http://127.0.0.1:8788/api/file/md_xxx"
 
 ### 8.3 album-backend（正式后端，Python + FastAPI）
 
-独立的同级项目，实现了本文**全部**接口（含 §5.8 雪碧图、§5.9 SSE、§5.10 元数据写入），
-并提供 Swagger 与 OpenAPI 用于第三方对接：
+独立的同级项目，实现了本文**全部**接口：P0/P1 的列表与流式播放，
+P2 的雪碧图（§5.8）、SSE（§5.9）、元数据写入（§5.10），
+以及 P3 的上传 / 重命名 / 删除（§5.11–§5.14）。另提供 Swagger 与 OpenAPI 供第三方对接：
 
 ```bash
 cd album-backend
@@ -728,7 +861,8 @@ curl "http://127.0.0.1:8791/api/media?kind=video"
 curl -H "Range: bytes=-500" -i "http://127.0.0.1:8791/api/file/md_xxx"
 ```
 
-详细信息见 `album-backend/README.md`。
+管理能力的开关与回收站语义见 `album-backend/README.md`：
+`ALBUM_ENABLE_WRITE=false` 时列表不再给出编辑/删除权限，前端入口自动隐藏。
 
 ### 换后端的唯一门槛：跑过契约测试
 

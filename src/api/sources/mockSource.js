@@ -80,6 +80,19 @@ function sortMedia(list, sort = 'takenAt', order = 'desc') {
   })
 }
 
+/**
+ * 演示数据默认开放管理权限
+ * 真实后端靠 permissions 字段门控（见 API.md §4.10），mock 里直接给全开，
+ * 这样不开后端也能看到上传 / 重命名 / 删除入口。真实数据里的 permissions 优先。
+ */
+function withManagementPermissions(raw) {
+  if (!raw || typeof raw !== 'object') return raw
+  return {
+    ...raw,
+    permissions: { canView: true, canDownload: true, canEdit: true, canDelete: true, ...(raw.permissions || {}) }
+  }
+}
+
 export const mockSource = {
   name: 'mock',
 
@@ -102,7 +115,7 @@ export const mockSource = {
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
     const safePage = Math.min(Math.max(1, page), totalPages)
     const start = (safePage - 1) * pageSize
-    const list = adaptMediaList(filtered.slice(start, start + pageSize))
+    const list = adaptMediaList(filtered.slice(start, start + pageSize).map(withManagementPermissions))
 
     return {
       list,
@@ -119,13 +132,13 @@ export const mockSource = {
   async fetchPhoto(id) {
     await simulate()
     const raw = MOCK_MEDIA.find((media) => media.id === id)
-    return raw ? adaptMedia(raw) : null
+    return raw ? adaptMedia(withManagementPermissions(raw)) : null
   },
 
   async fetchPhotosByIds(ids = []) {
     await simulate()
     const set = new Set(ids)
-    return adaptMediaList(MOCK_MEDIA.filter((media) => set.has(media.id)))
+    return adaptMediaList(MOCK_MEDIA.filter((media) => set.has(media.id)).map(withManagementPermissions))
   },
 
   async fetchAlbums() {
@@ -139,19 +152,101 @@ export const mockSource = {
   },
 
   // -------------------------------------------------------------------------
-  // 以下为后续管理能力的占位实现：开关打开后如果后端还没就绪，会给出明确报错，
-  // 而不是静默失败。
+  // 管理能力（P3）：演示数据源在浏览器内模拟一遍完整链路，
+  // 这样不开后端也能看到"上传 → 重命名 → 删除"的效果。
+  // 注意这些改动只在内存里，刷新页面即回到初始演示数据。
   // -------------------------------------------------------------------------
-  async uploadPhotos() {
-    throw new Error('[mock] 上传接口尚未接入：请先用 VITE_DATA_SOURCE=api 指向真实后端')
+
+  /**
+   * @param {File[]|FileList} files
+   * @returns {Promise<{list: object[], failed: object[]}>}
+   */
+  async uploadPhotos(files = [], options = {}) {
+    await simulate()
+
+    const picked = Array.from(files || []).filter(Boolean)
+    const list = []
+    const failed = []
+
+    picked.forEach((file, index) => {
+      const isVideo = String(file.type || '').startsWith('video/')
+      const isImage = String(file.type || '').startsWith('image/')
+
+      if (!isImage && !isVideo) {
+        failed.push({ fileName: file.name, code: 1005, message: `不支持的文件类型：${file.type || '未知'}` })
+        return
+      }
+
+      const objectUrl = URL.createObjectURL(file)
+      const stamp = `${Date.now()}_${index}`
+
+      const raw = {
+        id: `up_${stamp}`,
+        title: String(file.name).replace(/\.[^.]+$/, ''),
+        fileName: file.name,
+        kind: isVideo ? 'video' : 'image',
+        mimeType: file.type,
+        size: file.size,
+        width: 0,
+        height: 0,
+        // 视频不给封面：没有 ffmpeg 时拿不到帧，留空让卡片显示图标占位
+        urls: isVideo ? { full: objectUrl, thumb: '', poster: '' } : { full: objectUrl, regular: objectUrl, thumb: objectUrl },
+        tags: [],
+        album: options.albumId ? MOCK_ALBUMS.find((item) => item.id === options.albumId) || null : null,
+        author: { id: 'u_me', name: '我', avatar: '/mock/avatars/u1.svg' },
+        createdAt: new Date().toISOString(),
+        takenAt: new Date().toISOString(),
+        ...(isVideo ? { video: { duration: 0, codec: '', width: 0, height: 0, rotation: 0 } } : {})
+      }
+
+      MOCK_MEDIA.unshift(raw)
+      list.push(withManagementPermissions(raw))
+    })
+
+    return { list: adaptMediaList(list), failed }
   },
 
-  async renamePhoto() {
-    throw new Error('[mock] 重命名接口尚未接入：请先用 VITE_DATA_SOURCE=api 指向真实后端')
+  /**
+   * 重命名：演示数据里只改显示用名，id 保持不变（mock 不落盘，没有路径派生的问题）
+   * @returns {Promise<{id:string, previousId:string, fileName:string, media:object}>}
+   */
+  async renamePhoto(id, fileName) {
+    await simulate()
+
+    const name = String(fileName ?? '').trim()
+    if (!name) throw new Error('文件名不能为空')
+
+    const raw = MOCK_MEDIA.find((media) => media.id === id)
+    if (!raw) throw new Error('媒体不存在')
+
+    raw.fileName = name
+    raw.title = name.replace(/\.[^.]+$/, '')
+
+    return { id, previousId: id, fileName: name, media: adaptMedia(withManagementPermissions(raw)) }
   },
 
-  async deletePhotos() {
-    throw new Error('[mock] 删除接口尚未接入：请先用 VITE_DATA_SOURCE=api 指向真实后端')
+  /**
+   * @param {string|string[]} ids
+   * @returns {Promise<{deleted:number, permanent:boolean, failed:object[]}>}
+   */
+  async deletePhotos(ids = []) {
+    await simulate()
+
+    const targets = Array.isArray(ids) ? ids : [ids]
+    const failed = []
+    let deleted = 0
+
+    targets.forEach((id) => {
+      const index = MOCK_MEDIA.findIndex((media) => media.id === id)
+      if (index < 0) {
+        failed.push({ id, code: 40404, message: '资源不存在' })
+        return
+      }
+      MOCK_MEDIA.splice(index, 1)
+      deleted += 1
+    })
+
+    return { deleted, permanent: true, failed }
   },
 
   /**
