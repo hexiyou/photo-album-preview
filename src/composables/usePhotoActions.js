@@ -104,8 +104,13 @@ export function createPhotoActions(context = {}) {
       tone: 'primary',
       visible: () => features.upload,
       disabled: () => false,
-      async run() {
-        const files = await pickFiles({ multiple: true })
+      /**
+       * @param {File[]} [preset] 已经拿到的文件（Ctrl+V 粘贴走这条路）。
+       *                 不传时才去开文件选择器 —— 两条路共用同一段上传逻辑，
+       *                 不会出现"粘贴上传少了失败提示"这类偏差。
+       */
+      async run(preset) {
+        const files = Array.isArray(preset) && preset.length ? preset : await pickFiles({ multiple: true })
         if (!files?.length) return
 
         try {

@@ -187,7 +187,7 @@ function close() {
 .trash {
   position: fixed;
   inset: 0;
-  z-index: 320;
+  z-index: var(--z-dialog);
   display: flex;
   align-items: center;
   justify-content: center;

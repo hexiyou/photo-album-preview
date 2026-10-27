@@ -14,6 +14,7 @@ import { downloadPhotos } from '@/utils/download'
 import { useToast } from '@/composables/useToast'
 import { createPhotoActions } from '@/composables/usePhotoActions'
 import { useDialog } from '@/composables/useDialog'
+import { usePasteUpload } from '@/composables/usePasteUpload'
 import { hoverPreviewEnabled, setHoverPreviewEnabled } from '@/composables/useHoverPreview'
 
 const { state, setQuery, setViewMode, refresh, prependMedias, removeMedias, selectedPhotos } = usePhotoStore()
@@ -300,6 +301,25 @@ async function runDeleteSelected() {
 }
 
 // ---------------------------------------------------------------------------
+// 剪贴板上传：主窗口里 Ctrl+V 直接传（截图后最顺手的路径）
+// ---------------------------------------------------------------------------
+const pasteReady = computed(() => !!uploadAction.value)
+
+usePasteUpload({
+  enabled: pasteReady,
+  onFiles: async (files) => {
+    if (!uploadAction.value) return
+    toast.info(`已收到 ${files.length} 个剪贴板文件，正在上传…`)
+    uploading.value = true
+    try {
+      await uploadAction.value.run(files)
+    } finally {
+      uploading.value = false
+    }
+  }
+})
+
+// ---------------------------------------------------------------------------
 // 回收站（P4，契约见 API.md §5.15）
 // 后端没实现时 listTrash 返回 null，入口直接不显示 —— 不打扰纯浏览场景
 // ---------------------------------------------------------------------------
@@ -393,7 +413,7 @@ async function handleRestored() {
     </div>
 
     <div class="toolbar__right">
-      <button v-if="uploadAction" type="button" class="btn btn--sm" :disabled="uploading" title="上传图片或视频到服务端" @click="runUpload">
+      <button v-if="uploadAction" type="button" class="btn btn--sm" :disabled="uploading" title="上传图片或视频；也可以直接按 Ctrl+V 粘贴剪贴板里的图片" @click="runUpload">
         <AppIcon :name="uploading ? 'spinner' : 'upload'" :size="15" :class="{ 'is-spinning': uploading }" />
         {{ uploading ? '上传中…' : '上传' }}
       </button>
@@ -509,7 +529,7 @@ async function handleRestored() {
 .toolbar {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
   gap: 12px;

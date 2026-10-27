@@ -45,6 +45,21 @@
   --header-height: 60px;
   --toolbar-height: 60px;
 
+  /**
+   * 层级顺序（从低到高）：页面内容 → 大图查看器 → 弹窗 → 全局提示
+   *
+   * 曾经在这里栽过：查看器写死 1000，弹窗写死 300，结果从查看器里点
+   * 「重命名 / 删除」弹出来的确认框被遮罩压在下面，必须关掉大图才能操作。
+   * 散落的数字看不出对错，所以统一收在这里 —— 层级关系一眼可见，
+   * 新增浮层时按语义取用，不要再自己拍一个数字。
+   */
+  --z-base: 1;
+  --z-sticky: 20;
+  --z-viewer: 1000;
+  /* 必须高于查看器：查看器里也会弹确认框（重命名 / 删除） */
+  --z-dialog: 1100;
+  --z-toast: 2000;
+
   --font: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
   --mono: 'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace;
 }

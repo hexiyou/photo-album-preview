@@ -31,7 +31,7 @@ const ICONS = {
   position: fixed;
   right: 18px;
   bottom: 18px;
-  z-index: 2000;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: 8px;
